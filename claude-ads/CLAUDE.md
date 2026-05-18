@@ -6,7 +6,7 @@ This repository contains **Claude Ads**, a Tier 4 Claude Code skill focused on t
 3 base advertising platforms where 95% of ad spend lives: **Meta, Google, TikTok**.
 It follows the Agent Skills open standard and the 3-layer architecture (directive,
 orchestration, execution). After the v2.4.0 guided-onboarding refactor, the skill has
-19 sub-skills, 7 agents (3 audit + 4 creative), 8 industry templates, ~158 weighted
+20 sub-skills, 7 agents (3 audit + 4 creative), 8 industry templates, ~158 weighted
 audit checks + 3 cross-platform checks, **plus a guided first-run wizard (`/ads start`)
 and a continuous coach (`/ads next`) backed by a persistent user profile + audit
 history at `~/.claude-ads/`**.
@@ -26,6 +26,7 @@ claude-ads/
     ads-google/SKILL.md            # Google Ads deep analysis (includes YouTube)
     ads-meta/SKILL.md              # Meta/Facebook Ads analysis — MCP-wired
     ads-tiktok/SKILL.md           # TikTok Ads analysis
+    ads-carousel/SKILL.md         # Multi-card carousel ad builder (Meta + TikTok)
     ads-creative/SKILL.md         # Cross-platform creative quality
     ads-landing/SKILL.md          # Landing page analysis
     ads-budget/SKILL.md           # Budget allocation optimization
@@ -69,6 +70,7 @@ claude-ads/
 | `/ads google` | Google Ads deep analysis (includes YouTube video campaigns) |
 | `/ads meta` | Meta/Facebook Ads analysis (MCP-wired to claude.ai Facebook) |
 | `/ads tiktok` | TikTok Ads analysis (Smart+, Shop, Symphony, GMV Max) |
+| `/ads carousel` | Multi-card carousel ad builder → `carousel-brief.md` (Meta + TikTok) |
 | `/ads creative` | Creative quality and fatigue assessment |
 | `/ads landing` | Landing page conversion analysis |
 | `/ads budget` | Budget allocation optimization |

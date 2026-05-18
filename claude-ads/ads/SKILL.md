@@ -1,7 +1,7 @@
 ---
 name: ads
 description: "Free-first paid advertising audit and optimization skill, focused on the 3 platforms where 95% of advertiser spend lives: Meta, Google, TikTok. Guided onboarding (/ads start) saves context once and step-by-step OAuth walkthroughs; continuous coach (/ads next) ranks Quick Wins after each audit. ~158 weighted checks with scoring, parallel agents, industry templates, and AI creative generation."
-argument-hint: "start | next | audit | google | meta | tiktok | creative | landing | budget | plan <type> | competitor | dna <url> | create | generate | photoshoot | update <platform|all> | publish"
+argument-hint: "start | next | audit | google | meta | tiktok | creative | carousel | landing | budget | plan <type> | competitor | dna <url> | create | generate | photoshoot | update <platform|all> | publish"
 license: MIT
 ---
 
@@ -24,6 +24,7 @@ future command ever re-asks.
 | `/ads google` | Google Ads deep analysis (Search, PMax, includes YouTube video campaigns) |
 | `/ads meta` | Meta Ads deep analysis (FB, IG, Advantage+) — MCP-wired to claude.ai Facebook |
 | `/ads tiktok` | TikTok Ads deep analysis (Creative, Shop, Smart+, Symphony, GMV Max) |
+| `/ads carousel` | Multi-card carousel ad builder for Meta + TikTok → `carousel-brief.md` |
 | `/ads creative` | Cross-platform creative quality audit |
 | `/ads landing` | Landing page quality assessment for ad campaigns |
 | `/ads budget` | Budget allocation and bidding strategy review |
@@ -94,9 +95,9 @@ When the user invokes `/ads audit`, delegate to subagents in parallel:
 8. **Persist to history** — for each new audit JSON: `python3 scripts/profile.py save-audit <platform>-audit-results.json`. This feeds `/ads next` regression detection.
 9. **Suggest the next step** — point the user at `/ads next` for ranked Quick Wins.
 
-For individual commands (`/ads google`, `/ads meta`, etc.), load the relevant
-sub-skill directly. Still load profile / collect context first if not already
-provided.
+For individual commands (`/ads google`, `/ads meta`, `/ads carousel`, etc.), load
+the relevant sub-skill directly. Still load profile / collect context first if not
+already provided.
 
 For `/ads update <platform|all>`, route to `skills/ads-update/SKILL.md`. The update
 skill enforces a mandatory cost-confirmation gate before fetching — do NOT bypass
@@ -212,7 +213,7 @@ Aggregate = Sum(Platform_Score x Platform_Budget_Share)
 
 ## Sub-Skills
 
-This skill orchestrates 19 specialized sub-skills:
+This skill orchestrates 20 specialized sub-skills:
 
 1. **ads-start**: Guided first-run wizard — context capture, per-platform OAuth/MCP walkthroughs with verification, optional Zernio + Meta Developers signup, profile persistence to `~/.claude-ads/profile.json`
 2. **ads-audit**: Full multi-platform audit with parallel delegation across Meta / Google / TikTok
@@ -220,19 +221,20 @@ This skill orchestrates 19 specialized sub-skills:
 4. **ads-google**: Google Ads deep analysis (Search, PMax, YouTube video campaigns — they share the Google Ads API)
 5. **ads-meta**: Meta Ads deep analysis (FB, IG, Advantage+) — MCP-wired to claude.ai Facebook
 6. **ads-tiktok**: TikTok Ads deep analysis (Creative, Shop, Smart+, Symphony, GMV Max)
-7. **ads-creative**: Cross-platform creative quality audit
-8. **ads-landing**: Landing page quality for ad campaigns
-9. **ads-budget**: Budget allocation and bidding strategy
-10. **ads-plan**: Strategic ad planning with industry templates (8 templates after v2.3.0 scope-down)
-11. **ads-competitor**: Competitor ad intelligence
-12. **ads-dna**: Brand DNA extraction from website URL
-13. **ads-create**: Campaign concepts, copy decks, creative briefs
-14. **ads-generate**: AI image generation with pluggable providers
-15. **ads-photoshoot**: Product photography in 5 professional styles
-16. **ads-update**: Refresh per-platform references with last 30 days of changes
-17. **ads-math**: PPC financial calculator (CPA, ROAS, break-even, LTV:CAC, MER)
-18. **ads-test**: A/B test design (hypothesis, sample size, statistical significance)
-19. **ads-publish**: Publish creatives to 14+ social networks via Zernio (first 2 accounts free)
+7. **ads-carousel**: Multi-card carousel ad builder — guided narrative + per-card copy + image briefs for Meta and TikTok → `carousel-brief.md`
+8. **ads-creative**: Cross-platform creative quality audit
+9. **ads-landing**: Landing page quality for ad campaigns
+10. **ads-budget**: Budget allocation and bidding strategy
+11. **ads-plan**: Strategic ad planning with industry templates (8 templates after v2.3.0 scope-down)
+12. **ads-competitor**: Competitor ad intelligence
+13. **ads-dna**: Brand DNA extraction from website URL
+14. **ads-create**: Campaign concepts, copy decks, creative briefs
+15. **ads-generate**: AI image generation with pluggable providers
+16. **ads-photoshoot**: Product photography in 5 professional styles
+17. **ads-update**: Refresh per-platform references with last 30 days of changes
+18. **ads-math**: PPC financial calculator (CPA, ROAS, break-even, LTV:CAC, MER)
+19. **ads-test**: A/B test design (hypothesis, sample size, statistical significance)
+20. **ads-publish**: Publish creatives to 14+ social networks via Zernio (first 2 accounts free)
 
 Plus `/ads report` for PDF deliverable generation (implemented in `scripts/generate_report.py`, no SKILL.md).
 
