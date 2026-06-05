@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "Sci-Hub-Search": {
+      "source": "jackkuo666/sci-hub-search-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "c0d8f1694cf36ec861f6fe21cd81772ca67c0b1042a243bd4e384947b8b3bbb5"
+    },
+    "branding": {
+      "source": "kostja94/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/strategies/brand/branding/SKILL.md",
+      "computedHash": "fe1239746624cc7082c44b92573830ea01f136659bdb7f57da514916f143fa04"
+    },
+    "context-compression": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/context-compression/SKILL.md",
+      "computedHash": "e66ed44b030836765e0adc6e922154de2a4bb48712b159170c5c0fe211d5a383"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
+    "humanize": {
+      "source": "humanizerai/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/humanize/SKILL.md",
+      "computedHash": "d8898832c1e5648c9600d6b79b985b415d849da2cfa3b40cc4e6d51ea2d1511d"
+    },
+    "mirofish-offline-simulation": {
+      "source": "aradotso/trending-skills",
+      "sourceType": "github",
+      "skillPath": "skills/mirofish-offline-simulation/SKILL.md",
+      "computedHash": "7b5b87e4ba15971c6d8094944b48b7602d0f540ffd26c1908827024cc2ef0378"
+    }
+  }
+}
