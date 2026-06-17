@@ -1,0 +1,5 @@
+# Clon local pesado de vercel-labs/agent-browser (no se versiona; instalar CLI con: npm i -g agent-browser)
+/agent-browser/
+
+# macOS
+.DS_Store
