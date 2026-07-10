@@ -89,6 +89,42 @@ function createTournament(names, courts, rng = Math.random) {
   };
 }
 
-const PadelEngine = { createTournament, generateRounds, pairKey, findPairing };
+function setScore(tournament, roundIndex, matchIndex, score) {
+  const round = tournament.rounds[roundIndex];
+  const match = round && round.matches[matchIndex];
+  if (!match) throw new Error('Partido inexistente');
+  const [a, b] = score;
+  if (!Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0 || a + b !== 4) {
+    throw new Error('Marcador inválido: debe sumar 4 games');
+  }
+  match.score = [a, b];
+}
+
+function standings(tournament) {
+  const rows = tournament.players.map((name, i) => ({
+    player: i,
+    name,
+    points: 0,
+    played: 0,
+  }));
+  for (const round of tournament.rounds) {
+    for (const m of round.matches) {
+      if (!m.score) continue;
+      const [ga, gb] = m.score;
+      for (const p of m.teamA) { rows[p].points += ga; rows[p].played++; }
+      for (const p of m.teamB) { rows[p].points += gb; rows[p].played++; }
+    }
+  }
+  rows.sort((x, y) => y.points - x.points);
+  let rank = 0;
+  let prev = null;
+  rows.forEach((r, i) => {
+    if (prev === null || r.points < prev) { rank = i + 1; prev = r.points; }
+    r.rank = rank;
+  });
+  return rows;
+}
+
+const PadelEngine = { createTournament, generateRounds, pairKey, findPairing, setScore, standings };
 if (typeof module !== 'undefined' && module.exports) module.exports = PadelEngine;
 if (typeof window !== 'undefined') window.PadelEngine = PadelEngine;

@@ -78,3 +78,71 @@ test('createTournament valida entradas', () => {
   assert.ok(Array.isArray(t.rounds) && t.rounds.length >= 1);
   for (const m of t.rounds[0].matches) assert.strictEqual(m.score, null);
 });
+
+const { setScore, standings } = require('../engine.js');
+
+function fixedTournament() {
+  // Torneo artificial de 6 jugadores con 2 jornadas conocidas
+  return {
+    players: ['Ana', 'Beto', 'Caro', 'Dani', 'Efra', 'Fer'],
+    courts: 1,
+    rounds: [
+      { matches: [{ court: 1, teamA: [0, 1], teamB: [2, 3], score: null }], byes: [4, 5] },
+      { matches: [{ court: 1, teamA: [0, 2], teamB: [4, 5], score: null }], byes: [1, 3] },
+    ],
+  };
+}
+
+test('setScore acepta marcadores que suman 4 y rechaza el resto', () => {
+  const t = fixedTournament();
+  setScore(t, 0, 0, [3, 1]);
+  assert.deepStrictEqual(t.rounds[0].matches[0].score, [3, 1]);
+  assert.throws(() => setScore(t, 0, 0, [3, 2]), /sumar 4/);
+  assert.throws(() => setScore(t, 0, 0, [5, -1]), /sumar 4/);
+  assert.throws(() => setScore(t, 9, 0, [2, 2]), /inexistente/);
+});
+
+test('standings suma games individuales y cuenta partidos jugados', () => {
+  const t = fixedTournament();
+  setScore(t, 0, 0, [3, 1]); // Ana+Beto 3, Caro+Dani 1
+  setScore(t, 1, 0, [2, 2]); // Ana+Caro 2, Efra+Fer 2
+  const rows = standings(t);
+  const byName = Object.fromEntries(rows.map((r) => [r.name, r]));
+  assert.strictEqual(byName['Ana'].points, 5); // 3 + 2
+  assert.strictEqual(byName['Ana'].played, 2);
+  assert.strictEqual(byName['Beto'].points, 3);
+  assert.strictEqual(byName['Caro'].points, 3); // 1 + 2
+  assert.strictEqual(byName['Dani'].points, 1);
+  assert.strictEqual(byName['Efra'].points, 2);
+  assert.strictEqual(byName['Fer'].points, 2);
+});
+
+test('standings: corrección de resultado recalcula', () => {
+  const t = fixedTournament();
+  setScore(t, 0, 0, [4, 0]);
+  setScore(t, 0, 0, [1, 3]); // corrección
+  const byName = Object.fromEntries(standings(t).map((r) => [r.name, r]));
+  assert.strictEqual(byName['Ana'].points, 1);
+  assert.strictEqual(byName['Caro'].points, 3);
+});
+
+test('standings: empatados comparten posición (ranking 1,1,3...)', () => {
+  const t = fixedTournament();
+  setScore(t, 0, 0, [2, 2]); // Ana,Beto,Caro,Dani = 2; Efra,Fer = 0
+  const rows = standings(t);
+  assert.strictEqual(rows[0].rank, 1);
+  assert.strictEqual(rows[1].rank, 1);
+  assert.strictEqual(rows[2].rank, 1);
+  assert.strictEqual(rows[3].rank, 1);
+  assert.strictEqual(rows[4].rank, 5);
+  assert.strictEqual(rows[5].rank, 5);
+});
+
+test('standings sin resultados: todos 0 puntos, 0 jugados, rank 1', () => {
+  const rows = standings(fixedTournament());
+  for (const r of rows) {
+    assert.strictEqual(r.points, 0);
+    assert.strictEqual(r.played, 0);
+    assert.strictEqual(r.rank, 1);
+  }
+});
