@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "padel",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/private/tmp/claude-501/-Users-ache-Desktop-repositorio/4d3a8908-ffcd-463a-8108-7201c79e37a1/scratchpad/serve.js"],
+      "port": 8734
+    }
+  ]
+}
