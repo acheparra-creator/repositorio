@@ -9,8 +9,11 @@
 <meta property="og:description" content="Cerca de tu casa, sin viajar a Colima para cada sesión. Nefrólogo supervisando, equipos modernos y lugares disponibles. Agenda por WhatsApp.">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_MX">
-<meta property="og:image" content="assets/unidad-interior.jpg">
+<meta property="og:image" content="assets/fachada.jpg">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <link rel="stylesheet" href="styles.css">
 <script type="application/ld+json">
 {
@@ -51,16 +54,16 @@
 </head>
 <body>
 
-<header class="site-header">
+<header class="site-header" id="top">
   <div class="wrap header-inner">
     <a class="brand" href="#inicio">
-      <svg class="brand-drop" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0 0 14 0c0-4.5-7-13-7-13z"/></svg>
-      <span>RENALIA <small>· Tecomán</small></span>
+      <span class="brand-louvers" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-name">RENALIA<small>Tecomán</small></span>
     </a>
     <nav class="site-nav" aria-label="Secciones">
+      <a href="#situaciones">Pacientes</a>
       <a href="#servicios">Servicios</a>
       <a href="#unidad">La unidad</a>
-      <a href="#transito">En tránsito</a>
       <a href="#ubicacion">Ubicación</a>
     </nav>
     <a class="btn btn-wa btn-header" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener">WhatsApp</a>
@@ -69,65 +72,67 @@
 
 <main id="inicio">
 
-  <!-- HERO -->
+  <!-- HERO: fachada real de la unidad -->
   <section class="hero">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <span class="badge">Lugares disponibles esta semana</span>
-        <h1>Hemodiálisis en Tecomán,<br>cerca de tu casa</h1>
-        <p class="hero-sub">Sin viajar a Colima para cada sesión. Médico altamente capacitado en cada turno y <strong>nefrólogo supervisando</strong> tu tratamiento.</p>
-        <div class="hero-ctas">
-          <a class="btn btn-wa" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener">
-            Agenda por WhatsApp · 313 151 9215
-          </a>
-          <a class="btn btn-ghost" href="#unidad">Conoce la unidad</a>
-        </div>
-      </div>
-      <figure class="hero-photo">
-        <img src="assets/unidad-interior.jpg" alt="Sala de hemodiálisis de Renalia Tecomán con sillones y equipos modernos" width="1600" height="1200">
-      </figure>
+    <div class="hero-media" aria-hidden="true">
+      <img src="assets/fachada.jpg" alt="" width="1536" height="2048" fetchpriority="high" id="heroImg">
+      <div class="hero-veil"></div>
     </div>
+    <div class="wrap hero-content">
+      <p class="badge reveal-load" style="--d:.1s">Lugares disponibles esta semana</p>
+      <h1 class="reveal-load" style="--d:.22s">Hemodiálisis<br>en Tecomán,<br><em>cerca de tu casa</em></h1>
+      <p class="hero-sub reveal-load" style="--d:.36s">Sin viajar a Colima para cada sesión. Médico altamente capacitado en cada turno y <strong>nefrólogo supervisando</strong> tu tratamiento.</p>
+      <div class="hero-ctas reveal-load" style="--d:.5s">
+        <a class="btn btn-wa" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener">Agenda por WhatsApp</a>
+        <a class="btn btn-outline" href="#unidad">Conoce la unidad</a>
+      </div>
+      <p class="hero-tel reveal-load" style="--d:.6s"><a href="tel:+523131519215">313 151 9215</a> · Valentín Gómez Farías 699, Tecomán</p>
+    </div>
+    <div class="hero-louvers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </section>
 
-  <!-- BARRA DE CONFIANZA -->
-  <section class="trust">
-    <div class="wrap trust-grid">
-      <div class="trust-item"><span class="ticon">🩺</span><p><strong>Nefrólogo supervisando</strong> cada turno</p></div>
-      <div class="trust-item"><span class="ticon">⚙️</span><p><strong>Equipos modernos</strong> con monitoreo continuo</p></div>
-      <div class="trust-item"><span class="ticon">💙</span><p><strong>Enfermería especializada</strong> en terapia renal</p></div>
-      <div class="trust-item"><span class="ticon">🛋️</span><p><strong>Sala de espera</strong> para acompañantes</p></div>
+  <!-- BARRA DE CONFIANZA: flota sobre el corte del hero -->
+  <section class="trust" aria-label="Por qué confiar en Renalia">
+    <div class="wrap">
+      <ul class="trust-card reveal">
+        <li><strong>Nefrólogo supervisando</strong><span>cada turno, todos los días</span></li>
+        <li><strong>Equipos modernos</strong><span>monitoreo continuo en sesión</span></li>
+        <li><strong>Enfermería especializada</strong><span>en terapia renal</span></li>
+        <li><strong>Sala de espera</strong><span>para tus acompañantes</span></li>
+      </ul>
     </div>
   </section>
 
   <!-- 4 ÁNGULOS -->
   <section class="situaciones" id="situaciones">
     <div class="wrap">
-      <h2>¿Te suena familiar?</h2>
-      <p class="section-sub">Cada situación es distinta. Escríbenos y te orientamos según la tuya.</p>
+      <p class="eyebrow reveal"><span class="lv" aria-hidden="true"><i></i><i></i><i></i></span>Pacientes y familias</p>
+      <h2 class="reveal">¿Te suena familiar?</h2>
+      <p class="section-sub reveal">Cada situación es distinta. Escríbenos y te orientamos según la tuya.</p>
       <div class="cards-grid">
 
-        <article class="card">
+        <article class="card reveal" style="--d:.05s">
           <h3>Mi familiar espera lugar o viaja a Colima</h3>
           <p>Tenemos lugares disponibles esta misma semana. Hemodiálisis a minutos de tu casa, sin traslados largos, con horarios que se adaptan a tu familia.</p>
-          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20mi%20familiar%20necesita%20lugar%20para%20hemodi%C3%A1lisis%20en%20Tecom%C3%A1n" target="_blank" rel="noopener">Pregunta por un lugar →</a>
+          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20mi%20familiar%20necesita%20lugar%20para%20hemodi%C3%A1lisis%20en%20Tecom%C3%A1n" target="_blank" rel="noopener">Pregunta por un lugar</a>
         </article>
 
-        <article class="card">
+        <article class="card reveal" style="--d:.12s">
           <h3>Le acaban de indicar hemodiálisis</h3>
           <p>Es normal sentirse abrumado. Te orientamos sin costo: el proceso paso a paso, dudas sobre catéter, fístula y frecuencia de sesiones. No tienen que resolver esto solos.</p>
-          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20me%20acaban%20de%20indicar%20hemodi%C3%A1lisis%20y%20quiero%20orientaci%C3%B3n" target="_blank" rel="noopener">Recibe orientación sin costo →</a>
+          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20me%20acaban%20de%20indicar%20hemodi%C3%A1lisis%20y%20quiero%20orientaci%C3%B3n" target="_blank" rel="noopener">Recibe orientación sin costo</a>
         </article>
 
-        <article class="card">
+        <article class="card reveal" style="--d:.19s">
           <h3>Quiero comparar antes de decidir</h3>
           <p>Ven a conocer la unidad sin compromiso: equipos, sala de espera para acompañantes y el equipo que atenderá a tu familiar. Te la mostramos con gusto.</p>
-          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20agendar%20una%20visita%20para%20conocer%20la%20unidad" target="_blank" rel="noopener">Agenda tu visita →</a>
+          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20agendar%20una%20visita%20para%20conocer%20la%20unidad" target="_blank" rel="noopener">Agenda tu visita</a>
         </article>
 
-        <article class="card">
+        <article class="card reveal" style="--d:.26s">
           <h3>Estoy de visita en la costa</h3>
           <p>¿De paso por Tecomán, Manzanillo o la costa? Sesiones temporales con tu mismo esquema. Solo necesitas tu resumen clínico y últimos laboratorios. Confirmación el mismo día.</p>
-          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20estoy%20de%20visita%20en%20la%20zona%20y%20necesito%20una%20sesi%C3%B3n%20de%20hemodi%C3%A1lisis" target="_blank" rel="noopener">Reserva tu sesión →</a>
+          <a class="card-cta" href="https://wa.me/5213131519215?text=Hola%2C%20estoy%20de%20visita%20en%20la%20zona%20y%20necesito%20una%20sesi%C3%B3n%20de%20hemodi%C3%A1lisis" target="_blank" rel="noopener">Reserva tu sesión</a>
         </article>
 
       </div>
@@ -137,21 +142,22 @@
   <!-- SERVICIOS -->
   <section class="servicios" id="servicios">
     <div class="wrap">
-      <h2>Servicios</h2>
-      <div class="cards-grid">
-        <article class="card servicio">
+      <p class="eyebrow reveal"><span class="lv" aria-hidden="true"><i></i><i></i><i></i></span>Atención renal integral</p>
+      <h2 class="reveal">Servicios</h2>
+      <div class="serv-grid">
+        <article class="serv reveal" style="--d:.05s">
           <h3>Hemodiálisis</h3>
           <p>Sesiones con equipos modernos, monitoreo continuo y protocolos supervisados por nefrólogo en cada turno.</p>
         </article>
-        <article class="card servicio">
+        <article class="serv reveal" style="--d:.12s">
           <h3>Consulta de nefrología</h3>
           <p>Diagnóstico oportuno y manejo integral de la enfermedad renal, para frenar su avance a tiempo.</p>
         </article>
-        <article class="card servicio">
+        <article class="serv reveal" style="--d:.19s">
           <h3>Pacientes en tránsito</h3>
           <p>Sesiones temporales para visitantes, con tu mismo esquema de tratamiento y confirmación el mismo día.</p>
         </article>
-        <article class="card servicio">
+        <article class="serv reveal" style="--d:.26s">
           <h3>Urología</h3>
           <p>Atención urológica con el Dr. José Llamas Ríos, cirujano urólogo: litiasis renal, próstata y más.</p>
         </article>
@@ -162,13 +168,14 @@
   <!-- CONOCE LA UNIDAD -->
   <section class="unidad" id="unidad">
     <div class="wrap unidad-grid">
-      <figure class="unidad-photo">
-        <img src="assets/unidad-interior.jpg" alt="Interior de la unidad: sillones de hemodiálisis y equipos" width="1600" height="1200" loading="lazy">
+      <figure class="unidad-photo reveal">
+        <img src="assets/unidad-interior.jpg" alt="Interior de la unidad: sillones de hemodiálisis y equipos modernos" width="1600" height="1200" loading="lazy">
       </figure>
       <div class="unidad-copy">
-        <h2>Conoce la unidad antes de decidir</h2>
-        <p>Elegir dónde recibirá hemodiálisis tu familiar es una decisión importante. Por eso te invitamos a visitarnos: recorre la unidad, conoce los equipos y resuelve tus dudas directamente con nosotros. <strong>Sin compromiso.</strong></p>
-        <a class="btn btn-wa" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20agendar%20una%20visita%20para%20conocer%20la%20unidad" target="_blank" rel="noopener">Agenda una visita</a>
+        <p class="eyebrow reveal"><span class="lv" aria-hidden="true"><i></i><i></i><i></i></span>Puertas abiertas</p>
+        <h2 class="reveal">Conoce la unidad antes de decidir</h2>
+        <p class="reveal">Elegir dónde recibirá hemodiálisis tu familiar es una decisión importante. Por eso te invitamos a visitarnos: recorre la unidad, conoce los equipos y resuelve tus dudas directamente con nosotros. <strong>Sin compromiso.</strong></p>
+        <a class="btn btn-wa reveal" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20agendar%20una%20visita%20para%20conocer%20la%20unidad" target="_blank" rel="noopener">Agenda una visita</a>
       </div>
     </div>
   </section>
@@ -176,32 +183,33 @@
   <!-- EQUIPO -->
   <section class="equipo" id="equipo">
     <div class="wrap equipo-grid">
-      <figure class="equipo-photo">
+      <div class="equipo-copy">
+        <p class="eyebrow reveal"><span class="lv" aria-hidden="true"><i></i><i></i><i></i></span>Nuestro equipo</p>
+        <h2 class="reveal">Dr. Héctor Parra Lomelí</h2>
+        <p class="cargo reveal">Nefrólogo · Director de la unidad · Responsable Sanitario</p>
+        <p class="reveal">Cada sesión en Renalia Tecomán se realiza bajo la supervisión directa de un nefrólogo, con médico altamente capacitado en cada turno y personal de enfermería especializado en terapia renal.</p>
+        <p class="equipo-extra reveal">Atención urológica: <strong>Dr. José Llamas Ríos</strong>, cirujano urólogo.</p>
+      </div>
+      <figure class="equipo-photo reveal">
         <img src="assets/dr-parra.jpg" alt="Dr. Héctor Parra Lomelí, nefrólogo, en la unidad de hemodiálisis" width="465" height="1080" loading="lazy">
       </figure>
-      <div class="equipo-copy">
-        <h2>Nuestro equipo</h2>
-        <h3>Dr. Héctor Parra Lomelí</h3>
-        <p class="cargo">Nefrólogo · Director de la unidad · Responsable Sanitario</p>
-        <p>Cada sesión en Renalia Tecomán se realiza bajo la supervisión directa de un nefrólogo, con médico altamente capacitado en cada turno y personal de enfermería especializado en terapia renal.</p>
-        <p class="equipo-extra">Atención urológica: <strong>Dr. José Llamas Ríos</strong>, cirujano urólogo.</p>
-      </div>
     </div>
   </section>
 
   <!-- UBICACIÓN -->
   <section class="ubicacion" id="ubicacion">
     <div class="wrap">
-      <h2>Ubicación y horario</h2>
+      <p class="eyebrow reveal"><span class="lv" aria-hidden="true"><i></i><i></i><i></i></span>Visítanos</p>
+      <h2 class="reveal">Ubicación y horario</h2>
       <div class="ubicacion-grid">
-        <div class="ubicacion-datos">
-          <p class="dato"><strong>Dirección</strong><br>Valentín Gómez Farías 699, esq. Miguel Bracamontes<br>Tecomán, Colima · CP 28110</p>
-          <p class="dato"><strong>Horario</strong><br>Lunes a sábado · 7:00 a.m. – 3:00 p.m.</p>
-          <p class="dato"><strong>Teléfono / WhatsApp</strong><br><a href="tel:+523131519215">313 151 9215</a></p>
-          <p class="dato"><strong>Correo</strong><br><a href="mailto:renaliatecoman@gmail.com">renaliatecoman@gmail.com</a></p>
-          <a class="btn btn-ghost" href="https://www.google.com/maps/place/Renalia+Tecom%C3%A1n/@18.9215835,-103.8777819,17z" target="_blank" rel="noopener">Cómo llegar (Google Maps)</a>
+        <div class="ubicacion-datos reveal">
+          <p class="dato"><strong>Dirección</strong>Valentín Gómez Farías 699, esq. Miguel Bracamontes<br>Tecomán, Colima · CP 28110</p>
+          <p class="dato"><strong>Horario</strong>Lunes a sábado · 7:00 a.m. – 3:00 p.m.</p>
+          <p class="dato"><strong>Teléfono / WhatsApp</strong><a href="tel:+523131519215">313 151 9215</a></p>
+          <p class="dato"><strong>Correo</strong><a href="mailto:renaliatecoman@gmail.com">renaliatecoman@gmail.com</a></p>
+          <a class="btn btn-outline" href="https://www.google.com/maps/place/Renalia+Tecom%C3%A1n/@18.9215835,-103.8777819,17z" target="_blank" rel="noopener">Cómo llegar</a>
         </div>
-        <div class="mapa">
+        <div class="mapa reveal">
           <iframe
             title="Mapa: Renalia Tecomán"
             src="https://www.google.com/maps?q=Renalia+Tecom%C3%A1n,+Valent%C3%ADn+G%C3%B3mez+Far%C3%ADas+699,+Tecom%C3%A1n&output=embed"
@@ -213,12 +221,11 @@
 
   <!-- CTA FINAL -->
   <section class="cta-final">
+    <div class="cta-louvers" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
     <div class="wrap">
-      <h2>Cada sesión cuenta.<br>No dejes pasar más semanas.</h2>
-      <a class="btn btn-wa btn-grande" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener">
-        Escríbenos por WhatsApp · 313 151 9215
-      </a>
-      <p class="cta-nota">Respondemos en horario de atención: lunes a sábado, 7:00 a.m. – 3:00 p.m.</p>
+      <h2 class="reveal">Cada sesión cuenta.<br>No dejes pasar más semanas.</h2>
+      <a class="btn btn-wa btn-grande reveal" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener">Escríbenos por WhatsApp · 313 151 9215</a>
+      <p class="cta-nota reveal">Respondemos en horario de atención: lunes a sábado, 7:00 a.m. – 3:00 p.m.</p>
     </div>
   </section>
 
@@ -244,6 +251,48 @@
 <a class="wa-float" href="https://wa.me/5213131519215?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20hemodi%C3%A1lisis%20en%20Renalia%20Tecom%C3%A1n" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.7 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.8 0-3.5-.5-5-1.3l-.4-.2-4.9 1 1-4.7-.3-.4c-1-1.6-1.6-3.4-1.6-5.2 0-5.5 4.5-10 10-10s10 4.5 10 10-4.4 10.8-9.8 10.8zm5.5-7.3c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.5s1.1 2.9 1.3 3.1c.2.2 2.2 3.4 5.4 4.7.8.3 1.4.5 1.8.7.8.2 1.5.2 2 .1.6-.1 1.8-.7 2.1-1.5.3-.7.3-1.3.2-1.5 0-.1-.3-.2-.6-.4z"/></svg>
 </a>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Revelado al hacer scroll
+  var revealed = document.querySelectorAll('.reveal');
+  if (reduced || !('IntersectionObserver' in window)) {
+    revealed.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealed.forEach(function (el) { io.observe(el); });
+  }
+
+  // Header sólido al scrollear
+  var header = document.querySelector('.site-header');
+  var onScroll = function () {
+    header.classList.toggle('scrolled', window.scrollY > 40);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Parallax sutil de la fachada
+  var img = document.getElementById('heroImg');
+  if (img && !reduced) {
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        var y = Math.min(window.scrollY, 900);
+        img.style.transform = 'translateY(' + y * 0.18 + 'px) scale(1.08)';
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+})();
+</script>
 
 </body>
 </html>
