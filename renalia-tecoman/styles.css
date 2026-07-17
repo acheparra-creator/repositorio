@@ -97,17 +97,18 @@ section { padding: 72px 0; }
   box-shadow: 0 1px 0 var(--line);
 }
 .header-inner { display: flex; align-items: center; gap: 20px; padding: 14px 24px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.brand-louvers { display: flex; gap: 4px; }
-.brand-louvers i { width: 4px; border-radius: 2px; background: var(--accent); display: block; }
-.brand-louvers i:nth-child(1) { height: 26px; }
-.brand-louvers i:nth-child(2) { height: 19px; align-self: center; opacity: .75; }
-.brand-louvers i:nth-child(3) { height: 12px; align-self: center; opacity: .5; }
+.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
+.brand-chip {
+  width: 42px; height: 42px; border-radius: 50%; background: #fff;
+  display: grid; place-items: center; overflow: hidden; flex: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+}
+.brand-chip img { width: 86%; height: 86%; object-fit: contain; }
 .brand-name {
   font-family: "Sora", sans-serif; font-weight: 800; letter-spacing: .18em;
-  font-size: 1.02rem; color: #fff; display: flex; flex-direction: column; line-height: 1.1;
+  font-size: 1.02rem; color: #fff; display: flex; flex-direction: column; line-height: 1.2; gap: 1px;
 }
-.brand-name small { font-size: .64rem; font-weight: 600; letter-spacing: .3em; color: var(--chrome); text-transform: uppercase; }
+.brand-name small { font-size: .58rem; font-weight: 600; letter-spacing: .16em; color: var(--chrome); text-transform: uppercase; }
 .site-header.scrolled .brand-name { color: var(--ink); }
 .site-nav { display: flex; gap: 22px; margin-left: auto; }
 .site-nav a {
@@ -258,7 +259,10 @@ section { padding: 72px 0; }
 /* ===== Footer ===== */
 .site-footer { padding: 48px 0 100px; }
 .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-.footer-brand { font-family: "Sora", sans-serif; font-weight: 800; letter-spacing: .14em; color: var(--primary); margin: 0 0 10px; }
+.footer-id { display: flex; align-items: center; gap: 18px; }
+.footer-logo { width: 92px; height: 92px; flex: none; border-radius: 16px; background: #fff; padding: 6px; box-sizing: border-box; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+.footer-brand { font-family: "Sora", sans-serif; font-weight: 800; letter-spacing: .14em; color: var(--primary); margin: 0 0 2px; }
+.footer-slogan { font-family: "Sora", sans-serif; font-size: .74rem !important; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--accent) !important; }
 .site-footer p { margin: 0 0 8px; color: var(--muted); font-size: .95rem; }
 .footer-legal { margin-top: 28px; }
 .footer-legal p { font-size: .8rem; }
