@@ -6,6 +6,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["/private/tmp/claude-501/-Users-ache-Desktop-repositorio/4d3a8908-ffcd-463a-8108-7201c79e37a1/scratchpad/serve.js"],
       "port": 8734
+    },
+    {
+      "name": "renalia",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/private/tmp/claude-501/-Users-ache-Desktop-repositorio/59883e4f-20e1-4541-a485-8b0a609649ff/scratchpad/serve-renalia.js"],
+      "port": 8741
     }
   ]
 }

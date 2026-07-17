@@ -3,7 +3,7 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['padel-americano/**', '.github/workflows/pages.yml']
+    paths: ['padel-americano/**', 'renalia-tecoman/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -23,10 +23,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Preparar sitio (solo la app de pádel)
+      - name: Preparar sitio (pádel + renalia)
         run: |
-          mkdir -p _site/padel-americano
+          mkdir -p _site/padel-americano _site/renalia-tecoman
           cp padel-americano/index.html padel-americano/engine.js _site/padel-americano/
+          cp -R renalia-tecoman/index.html renalia-tecoman/styles.css renalia-tecoman/favicon.svg renalia-tecoman/assets _site/renalia-tecoman/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
