@@ -23,11 +23,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Preparar sitio (pádel + renalia)
+      - name: Preparar sitio (renalia en raíz + pádel)
         run: |
-          mkdir -p _site/padel-americano _site/renalia-tecoman
+          mkdir -p _site/padel-americano
           cp padel-americano/index.html padel-americano/engine.js _site/padel-americano/
-          cp -R renalia-tecoman/index.html renalia-tecoman/styles.css renalia-tecoman/favicon.svg renalia-tecoman/assets _site/renalia-tecoman/
+          cp -R renalia-tecoman/index.html renalia-tecoman/styles.css renalia-tecoman/robots.txt renalia-tecoman/sitemap.xml renalia-tecoman/assets _site/
+          echo "renaliatecoman.com" > _site/CNAME
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
