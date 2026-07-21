@@ -6,6 +6,7 @@ const {
   CHARACTERS, BOARD, GOAL_POSITION,
   validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn,
 } = require('../engine.js');
+const { QUESTIONS } = require('../data.js');
 
 test('CHARACTERS tiene los 4 personajes fijos con su nivel', () => {
   assert.strictEqual(CHARACTERS.length, 4);
@@ -154,4 +155,20 @@ test('advanceTurn lanza error si no se ha respondido la pregunta activa', () => 
   const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(10));
   drawQuestion(game);
   assert.throws(() => advanceTurn(game));
+});
+
+test('integración: una partida completa con el banco real termina con un ganador', () => {
+  const game = createGame(['hija', 'hijo', 'mama', 'papa'], QUESTIONS, mulberry32(2026));
+  drawQuestion(game);
+  let iterations = 0;
+  while (!game.winnerId && iterations < 500) {
+    const q = game.pendingQuestion;
+    submitAnswer(game, q.correctIndex); // siempre responde correcto para forzar el fin de la partida
+    advanceTurn(game);
+    if (!game.winnerId) drawQuestion(game);
+    iterations++;
+  }
+  assert.ok(game.winnerId, 'la partida debió terminar con un ganador');
+  const winner = game.players.find((p) => p.id === game.winnerId);
+  assert.strictEqual(winner.position, GOAL_POSITION);
 });
