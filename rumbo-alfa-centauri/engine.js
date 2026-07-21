@@ -101,9 +101,27 @@ function submitAnswer(game, optionIndex) {
   return game.pendingResult;
 }
 
+function advanceTurn(game) {
+  if (!game.pendingResult) throw new Error('No se ha respondido la pregunta activa');
+  const player = currentPlayer(game);
+  if (game.pendingResult.correct) {
+    player.correct++;
+    player.position = Math.min(player.position + 1, GOAL_POSITION);
+  } else {
+    player.wrong++;
+  }
+  game.pendingQuestion = null;
+  game.pendingResult = null;
+  if (player.position >= GOAL_POSITION) {
+    game.winnerId = player.id;
+    return;
+  }
+  game.currentPlayerIndex = (game.currentPlayerIndex + 1) % game.players.length;
+}
+
 const RumboEngine = {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = RumboEngine;
 if (typeof window !== 'undefined') window.RumboEngine = RumboEngine;

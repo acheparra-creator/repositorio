@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn,
 } = require('../engine.js');
 
 test('CHARACTERS tiene los 4 personajes fijos con su nivel', () => {
@@ -114,4 +114,44 @@ test('submitAnswer marca incorrecto si el índice no coincide', () => {
 test('submitAnswer lanza error si no hay pregunta pendiente', () => {
   const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(6));
   assert.throws(() => submitAnswer(game, 0));
+});
+
+test('advanceTurn avanza la posición si acertó y pasa el turno al siguiente jugador', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(7));
+  const q = drawQuestion(game);
+  submitAnswer(game, q.correctIndex);
+  advanceTurn(game);
+  assert.strictEqual(game.players[0].position, 1);
+  assert.strictEqual(game.players[0].correct, 1);
+  assert.strictEqual(game.currentPlayerIndex, 1);
+  assert.strictEqual(game.pendingQuestion, null);
+  assert.strictEqual(game.pendingResult, null);
+});
+
+test('advanceTurn no avanza la posición si falló, pero sí pasa el turno', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(8));
+  const q = drawQuestion(game);
+  const wrongIndex = (q.correctIndex + 1) % 3;
+  submitAnswer(game, wrongIndex);
+  advanceTurn(game);
+  assert.strictEqual(game.players[0].position, 0);
+  assert.strictEqual(game.players[0].wrong, 1);
+  assert.strictEqual(game.currentPlayerIndex, 1);
+});
+
+test('advanceTurn declara ganador cuando la posición llega a GOAL_POSITION y no rota el turno', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(9));
+  game.players[0].position = GOAL_POSITION - 1;
+  const q = drawQuestion(game);
+  submitAnswer(game, q.correctIndex);
+  advanceTurn(game);
+  assert.strictEqual(game.players[0].position, GOAL_POSITION);
+  assert.strictEqual(game.winnerId, 'hijo');
+  assert.strictEqual(game.currentPlayerIndex, 0);
+});
+
+test('advanceTurn lanza error si no se ha respondido la pregunta activa', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(10));
+  drawQuestion(game);
+  assert.throws(() => advanceTurn(game));
 });
