@@ -87,10 +87,57 @@ function startGame() {
   render();
 }
 
+function renderPlay() {
+  const cells = RumboEngine.BOARD.map((cell, i) => {
+    const tokens = game.players.filter((p) => p.position === i).map((p) => p.emoji).join(' ');
+    return `<div class="cell">
+      <div class="planet">${cell.emoji}</div>
+      <div class="name">${esc(cell.name)}</div>
+      <div class="tokens">${tokens}</div>
+    </div>`;
+  }).join('');
+  const player = RumboEngine.currentPlayer(game);
+  const q = game.pendingQuestion;
+  const result = game.pendingResult;
+  let optsHtml = '';
+  q.options.forEach((opt, i) => {
+    let cls = 'opt';
+    if (result) {
+      if (i === q.correctIndex) cls += ' correct';
+      else if (i === result.optionIndex) cls += ' wrong';
+    }
+    const attr = result ? '' : `onclick="answer(${i})"`;
+    optsHtml += `<button class="${cls}" ${attr}>${esc(opt)}</button>`;
+  });
+  let footer = '';
+  if (result) {
+    footer = `<div class="explain">${result.correct ? '✅ ¡Correcto! ' : '❌ No era esa. '}${esc(q.explanation)}</div>
+      <button class="primary" onclick="continueTurn()">Continuar</button>`;
+  }
+  return `<div class="board">${cells}</div>
+    <div class="turn">${player.emoji} Turno de ${esc(player.name)}</div>
+    <div class="card">
+      <div class="qcat">${esc(CATEGORY_LABELS[q.category])}</div>
+      <div class="qtext">${esc(q.question)}</div>
+      ${optsHtml}
+      ${footer}
+    </div>`;
+}
+function answer(i) {
+  RumboEngine.submitAnswer(game, i);
+  render();
+}
+function continueTurn() {
+  RumboEngine.advanceTurn(game);
+  if (game.winnerId) { ui.screen = 'victory'; }
+  else { RumboEngine.drawQuestion(game); }
+  render();
+}
 function render() {
   const app = document.getElementById('app');
   if (ui.screen === 'select') app.innerHTML = renderSelect();
-  else app.innerHTML = '<div class="card"><p>Cargando pantalla de partida...</p></div>';
+  else if (ui.screen === 'play') app.innerHTML = renderPlay();
+  else app.innerHTML = '<div class="card"><p>Cargando pantalla de victoria...</p></div>';
 }
 render();
 </script>
