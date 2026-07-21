@@ -79,9 +79,23 @@ function currentPlayer(game) {
   return game.players[game.currentPlayerIndex];
 }
 
+function drawQuestion(game) {
+  if (game.winnerId) throw new Error('La partida ya terminó');
+  if (game.pendingQuestion) throw new Error('Ya hay una pregunta activa sin responder');
+  const player = currentPlayer(game);
+  let pool = game.pools[player.level];
+  if (pool.length === 0) {
+    pool = shuffle(game.fullQuestionsByLevel[player.level], game.rng);
+  }
+  const question = pool[0];
+  game.pools[player.level] = pool.slice(1);
+  game.pendingQuestion = question;
+  return question;
+}
+
 const RumboEngine = {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer,
+  validateSelection, createGame, currentPlayer, drawQuestion,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = RumboEngine;
 if (typeof window !== 'undefined') window.RumboEngine = RumboEngine;
