@@ -24,4 +24,16 @@ test('QUESTIONS es un arreglo', () => {
   assert.ok(Array.isArray(QUESTIONS));
 });
 
+test('nivel 9-11 tiene 40 preguntas válidas, 10 por categoría', () => {
+  const nivel = QUESTIONS.filter((q) => q.level === '9-11');
+  assert.strictEqual(nivel.length, 40);
+  for (const cat of CATEGORIES) {
+    assert.strictEqual(
+      nivel.filter((q) => q.category === cat).length, 10,
+      `nivel 9-11, categoría ${cat}`
+    );
+  }
+  for (const q of nivel) assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
+});
+
 module.exports = { isValidQuestion, LEVELS, CATEGORIES };
