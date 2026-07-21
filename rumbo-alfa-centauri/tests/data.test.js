@@ -60,4 +60,14 @@ test('nivel adulto tiene 40 preguntas válidas, 10 por categoría', () => {
   for (const q of nivel) assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
 });
 
+test('el banco completo tiene 120 preguntas sin ids duplicados y con datos válidos', () => {
+  assert.strictEqual(QUESTIONS.length, 120);
+  const ids = new Set();
+  for (const q of QUESTIONS) {
+    assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
+    assert.ok(!ids.has(q.id), `id duplicado: ${q.id}`);
+    ids.add(q.id);
+  }
+});
+
 module.exports = { isValidQuestion, LEVELS, CATEGORIES };
