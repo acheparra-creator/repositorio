@@ -48,4 +48,16 @@ test('nivel 12-15 tiene 40 preguntas válidas, 10 por categoría', () => {
   for (const q of nivel) assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
 });
 
+test('nivel adulto tiene 40 preguntas válidas, 10 por categoría', () => {
+  const nivel = QUESTIONS.filter((q) => q.level === 'adulto');
+  assert.strictEqual(nivel.length, 40);
+  for (const cat of CATEGORIES) {
+    assert.strictEqual(
+      nivel.filter((q) => q.category === cat).length, 10,
+      `nivel adulto, categoría ${cat}`
+    );
+  }
+  for (const q of nivel) assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
+});
+
 module.exports = { isValidQuestion, LEVELS, CATEGORIES };
