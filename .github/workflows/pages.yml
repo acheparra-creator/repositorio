@@ -3,7 +3,7 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['padel-americano/**', 'renalia-tecoman/**', '.github/workflows/pages.yml']
+    paths: ['padel-americano/**', 'renalia-tecoman/**', 'rumbo-alfa-centauri/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -23,10 +23,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Preparar sitio (renalia en raíz + pádel)
+      - name: Preparar sitio (renalia en raíz + pádel + rumbo a alfa centauri)
         run: |
           mkdir -p _site/padel-americano
           cp padel-americano/index.html padel-americano/engine.js _site/padel-americano/
+          mkdir -p _site/rumbo-alfa-centauri
+          cp rumbo-alfa-centauri/index.html rumbo-alfa-centauri/engine.js rumbo-alfa-centauri/data.js _site/rumbo-alfa-centauri/
           cp -R renalia-tecoman/index.html renalia-tecoman/styles.css renalia-tecoman/robots.txt renalia-tecoman/sitemap.xml renalia-tecoman/assets _site/
           echo "renaliatecoman.com" > _site/CNAME
       - uses: actions/upload-pages-artifact@v3
