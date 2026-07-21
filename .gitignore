@@ -3,3 +3,6 @@
 
 # macOS
 .DS_Store
+
+# Sesiones del companion visual de brainstorming (no se versiona)
+.superpowers/
