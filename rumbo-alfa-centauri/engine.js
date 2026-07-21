@@ -93,9 +93,17 @@ function drawQuestion(game) {
   return question;
 }
 
+function submitAnswer(game, optionIndex) {
+  if (!game.pendingQuestion) throw new Error('No hay pregunta activa');
+  if (game.pendingResult) throw new Error('Ya se respondió esta pregunta');
+  const correct = optionIndex === game.pendingQuestion.correctIndex;
+  game.pendingResult = { optionIndex, correct };
+  return game.pendingResult;
+}
+
 const RumboEngine = {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = RumboEngine;
 if (typeof window !== 'undefined') window.RumboEngine = RumboEngine;

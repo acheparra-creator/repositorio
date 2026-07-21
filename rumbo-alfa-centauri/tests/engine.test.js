@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer,
 } = require('../engine.js');
 
 test('CHARACTERS tiene los 4 personajes fijos con su nivel', () => {
@@ -93,4 +93,25 @@ test('drawQuestion lanza error si ya hay una pregunta pendiente sin responder', 
   const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(3));
   drawQuestion(game);
   assert.throws(() => drawQuestion(game));
+});
+
+test('submitAnswer marca correcto si el índice coincide con correctIndex', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(4));
+  const q = drawQuestion(game);
+  const result = submitAnswer(game, q.correctIndex);
+  assert.strictEqual(result.correct, true);
+  assert.strictEqual(game.pendingResult, result);
+});
+
+test('submitAnswer marca incorrecto si el índice no coincide', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(5));
+  const q = drawQuestion(game);
+  const wrongIndex = (q.correctIndex + 1) % 3;
+  const result = submitAnswer(game, wrongIndex);
+  assert.strictEqual(result.correct, false);
+});
+
+test('submitAnswer lanza error si no hay pregunta pendiente', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(6));
+  assert.throws(() => submitAnswer(game, 0));
 });
