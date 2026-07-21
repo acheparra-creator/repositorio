@@ -133,11 +133,29 @@ function continueTurn() {
   else { RumboEngine.drawQuestion(game); }
   render();
 }
+function renderVictory() {
+  const winner = game.players.find((p) => p.id === game.winnerId);
+  const rows = game.players.map((p) =>
+    `<tr><td>${p.emoji} ${esc(p.name)}</td><td>${p.correct}</td><td>${p.wrong}</td></tr>`
+  ).join('');
+  return `<h1>🏆 ¡${esc(winner.name)} llegó a Alfa Centauri!</h1>
+    <div class="card">
+      <table class="stats"><thead><tr><th>Jugador</th><th>Aciertos</th><th>Fallos</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <button class="primary" onclick="playAgain()">Jugar de nuevo</button>
+    </div>`;
+}
+function playAgain() {
+  game = null;
+  ui.screen = 'select';
+  ui.selected = [];
+  render();
+}
 function render() {
   const app = document.getElementById('app');
   if (ui.screen === 'select') app.innerHTML = renderSelect();
   else if (ui.screen === 'play') app.innerHTML = renderPlay();
-  else app.innerHTML = '<div class="card"><p>Cargando pantalla de victoria...</p></div>';
+  else app.innerHTML = renderVictory();
 }
 render();
 </script>
