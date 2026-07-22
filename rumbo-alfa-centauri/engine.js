@@ -2,10 +2,10 @@
 'use strict';
 
 const CHARACTERS = [
-  { id: 'hija', name: 'Hija', level: '12-15', emoji: '🚀' },
-  { id: 'hijo', name: 'Hijo', level: '9-11', emoji: '🛸' },
-  { id: 'mama', name: 'Mamá', level: 'adulto', emoji: '🚀' },
-  { id: 'papa', name: 'Papá', level: 'adulto', emoji: '🛸' },
+  { id: 'hija', name: 'Hija', level: '12-15' },
+  { id: 'hijo', name: 'Hijo', level: '9-11' },
+  { id: 'mama', name: 'Mamá', level: 'adulto' },
+  { id: 'papa', name: 'Papá', level: 'adulto' },
 ];
 
 const BOARD = [
@@ -45,10 +45,18 @@ function shuffle(arr, rng) {
   return a;
 }
 
+// Ordena de fácil (difficulty 1) a difícil (difficulty 3), aleatorio dentro
+// de cada nivel de dificultad. Así, entre más preguntas se consumen del pool
+// de un nivel, más difíciles se van poniendo.
+function orderByDifficulty(questions, rng) {
+  const tiers = [1, 2, 3].map((d) => shuffle(questions.filter((q) => q.difficulty === d), rng));
+  return tiers.flat();
+}
+
 function buildPools(levels, questions, rng) {
   const pools = {};
   for (const level of levels) {
-    pools[level] = shuffle(questions.filter((q) => q.level === level), rng);
+    pools[level] = orderByDifficulty(questions.filter((q) => q.level === level), rng);
   }
   return pools;
 }
@@ -57,7 +65,7 @@ function createGame(characterIds, questions, rng = Math.random) {
   validateSelection(characterIds);
   const players = characterIds.map((id) => {
     const c = findCharacter(id);
-    return { id: c.id, name: c.name, level: c.level, emoji: c.emoji, position: 0, correct: 0, wrong: 0 };
+    return { id: c.id, name: c.name, level: c.level, position: 0, correct: 0, wrong: 0 };
   });
   const levels = [...new Set(players.map((p) => p.level))];
   return {
@@ -85,7 +93,7 @@ function drawQuestion(game) {
   const player = currentPlayer(game);
   let pool = game.pools[player.level];
   if (pool.length === 0) {
-    pool = shuffle(game.fullQuestionsByLevel[player.level], game.rng);
+    pool = orderByDifficulty(game.fullQuestionsByLevel[player.level], game.rng);
   }
   const question = pool[0];
   game.pools[player.level] = pool.slice(1);
@@ -121,7 +129,7 @@ function advanceTurn(game) {
 
 const RumboEngine = {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, orderByDifficulty,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = RumboEngine;
 if (typeof window !== 'undefined') window.RumboEngine = RumboEngine;

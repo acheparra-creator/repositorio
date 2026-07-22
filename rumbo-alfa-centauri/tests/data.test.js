@@ -12,6 +12,7 @@ function isValidQuestion(q) {
     typeof q.id === 'string' && q.id.length > 0 &&
     LEVELS.includes(q.level) &&
     CATEGORIES.includes(q.category) &&
+    [1, 2, 3].includes(q.difficulty) &&
     typeof q.question === 'string' && q.question.length > 0 &&
     Array.isArray(q.options) && q.options.length === 3 &&
     q.options.every((o) => typeof o === 'string' && o.length > 0) &&
@@ -58,6 +59,17 @@ test('nivel adulto tiene 40 preguntas válidas, 10 por categoría', () => {
     );
   }
   for (const q of nivel) assert.ok(isValidQuestion(q), `pregunta inválida: ${q.id}`);
+});
+
+test('cada nivel tiene una progresión de dificultad (12 fáciles, 16 medias, 12 difíciles)', () => {
+  for (const level of LEVELS) {
+    const nivel = QUESTIONS.filter((q) => q.level === level);
+    const counts = { 1: 0, 2: 0, 3: 0 };
+    for (const q of nivel) counts[q.difficulty]++;
+    assert.strictEqual(counts[1], 12, `nivel ${level}, dificultad 1 (fácil)`);
+    assert.strictEqual(counts[2], 16, `nivel ${level}, dificultad 2 (media)`);
+    assert.strictEqual(counts[3], 12, `nivel ${level}, dificultad 3 (difícil)`);
+  }
 });
 
 test('el banco completo tiene 120 preguntas sin ids duplicados y con datos válidos', () => {

@@ -17,7 +17,7 @@
   .chars { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .char { background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; }
   .char.sel { border-color: var(--accent); background: #1c1440; }
-  .char .emoji { font-size: 2rem; }
+  .char .avatar svg { width: 64px; height: 76px; }
   .char .lvl { color: var(--muted); font-size: .8rem; }
   button { font-size: 1rem; border: none; border-radius: 10px; padding: 12px 16px; cursor: pointer; }
   .primary { background: var(--accent); color: var(--accent-ink); width: 100%; margin-top: 14px; }
@@ -26,8 +26,11 @@
   .cell { flex: 0 0 auto; width: 78px; text-align: center; }
   .cell .planet { font-size: 1.6rem; background: var(--card); border: 1px solid var(--line); border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
   .cell .name { font-size: .68rem; color: var(--muted); margin-top: 4px; }
-  .cell .tokens { font-size: 1rem; min-height: 1.2em; }
-  .turn { text-align: center; font-weight: 700; margin: 10px 0; }
+  .cell .tokens { display: flex; justify-content: center; gap: 2px; flex-wrap: wrap; min-height: 22px; margin-top: 4px; }
+  .cell .tokens svg { width: 15px; height: 18px; }
+  .turn { display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; margin: 10px 0; }
+  .turn svg { width: 22px; height: 26px; }
+  .stats .token svg { width: 18px; height: 21px; vertical-align: middle; margin-right: 4px; }
   .qcat { color: var(--muted); font-size: .8rem; text-transform: uppercase; }
   .qtext { font-size: 1.1rem; margin: 8px 0 14px; }
   .opt { display: block; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--line); color: var(--ink); margin-bottom: 8px; }
@@ -53,6 +56,16 @@ const CATEGORY_LABELS = {
 const ui = { screen: 'select', selected: [] };
 let game = null;
 
+// Avatares diseñados para cada personaje de la familia (no fotos/rostros
+// reales, estilo caricatura): hija güera de rizos, hijo con moicana,
+// mamá alta de pelo lacio, papá con barba y coleta.
+const AVATARS = {
+  hija: `<svg viewBox="0 0 100 120"><rect x="30" y="66" width="40" height="50" rx="14" fill="#ec4899"/><path d="M22,38 Q50,12 78,38 L80,84 Q70,92 63,84 L63,50 L37,50 L37,84 Q30,92 20,84Z" fill="#f4d35e"/><circle cx="50" cy="46" r="24" fill="#f6dcc0"/><circle cx="30" cy="30" r="9" fill="#f4d35e"/><circle cx="42" cy="22" r="10" fill="#f4d35e"/><circle cx="58" cy="22" r="10" fill="#f4d35e"/><circle cx="70" cy="30" r="9" fill="#f4d35e"/><circle cx="42" cy="48" r="2.6" fill="#1f2937"/><circle cx="58" cy="48" r="2.6" fill="#1f2937"/><path d="M42,57 Q50,61 58,57" stroke="#1f2937" stroke-width="2" fill="none"/></svg>`,
+  hijo: `<svg viewBox="0 0 100 120"><rect x="32" y="68" width="36" height="48" rx="12" fill="#f97316"/><circle cx="50" cy="46" r="22" fill="#f6dcc0"/><path d="M47,20 L44,34 L48,30 L49,18 L51,18 L52,30 L56,34 L53,20 L59,32 L54,26 L55,16 L45,16 L46,26 L41,32Z" fill="#111827"/><rect x="47" y="16" width="6" height="22" fill="#111827"/><circle cx="42" cy="48" r="2.4" fill="#1f2937"/><circle cx="58" cy="48" r="2.4" fill="#1f2937"/><path d="M43,57 Q50,61 57,57" stroke="#1f2937" stroke-width="2" fill="none"/></svg>`,
+  mama: `<svg viewBox="0 0 100 120"><rect x="30" y="70" width="40" height="46" rx="13" fill="#1f2937"/><path d="M18,42 Q50,10 82,42 Q84,74 76,86 L76,52 Q50,38 24,52 L24,86 Q16,74 18,42Z" fill="#1c1310"/><circle cx="50" cy="48" r="23" fill="#f3d5b5"/><circle cx="42" cy="50" r="2.6" fill="#1f2937"/><circle cx="58" cy="50" r="2.6" fill="#1f2937"/><path d="M42,59 Q50,63 58,59" stroke="#1f2937" stroke-width="2" fill="none"/></svg>`,
+  papa: `<svg viewBox="0 0 100 120"><rect x="28" y="66" width="44" height="52" rx="15" fill="#d6c9a8"/><circle cx="50" cy="42" r="25" fill="#e7b98a"/><path d="M20,54 Q22,80 32,90 Q42,98 50,98 Q58,98 68,90 Q78,80 80,54 Q80,68 70,74 L70,58 Q50,44 30,58 L30,74 Q20,68 20,54Z" fill="#141010"/><path d="M68,60 Q88,66 80,88 Q72,78 65,68Z" fill="#141010"/><circle cx="42" cy="44" r="2.7" fill="#1f2937"/><circle cx="58" cy="44" r="2.7" fill="#1f2937"/><path d="M43,56 Q50,60 57,56" stroke="#1f2937" stroke-width="2" fill="none"/></svg>`,
+};
+
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -61,7 +74,7 @@ function renderSelect() {
   const cards = RumboEngine.CHARACTERS.map((c) => {
     const sel = ui.selected.includes(c.id) ? ' sel' : '';
     return `<div class="char${sel}" onclick="selectCharacter('${c.id}')">
-      <div class="emoji">${c.emoji}</div>
+      <div class="avatar">${AVATARS[c.id]}</div>
       <div>${esc(c.name)}</div>
       <div class="lvl">Nivel: ${esc(c.level)}</div>
     </div>`;
@@ -89,7 +102,7 @@ function startGame() {
 
 function renderPlay() {
   const cells = RumboEngine.BOARD.map((cell, i) => {
-    const tokens = game.players.filter((p) => p.position === i).map((p) => p.emoji).join(' ');
+    const tokens = game.players.filter((p) => p.position === i).map((p) => AVATARS[p.id]).join('');
     return `<div class="cell">
       <div class="planet">${cell.emoji}</div>
       <div class="name">${esc(cell.name)}</div>
@@ -115,7 +128,7 @@ function renderPlay() {
       <button class="primary" onclick="continueTurn()">Continuar</button>`;
   }
   return `<div class="board">${cells}</div>
-    <div class="turn">${player.emoji} Turno de ${esc(player.name)}</div>
+    <div class="turn">${AVATARS[player.id]} Turno de ${esc(player.name)}</div>
     <div class="card">
       <div class="qcat">${esc(CATEGORY_LABELS[q.category])}</div>
       <div class="qtext">${esc(q.question)}</div>
@@ -136,7 +149,7 @@ function continueTurn() {
 function renderVictory() {
   const winner = game.players.find((p) => p.id === game.winnerId);
   const rows = game.players.map((p) =>
-    `<tr><td>${p.emoji} ${esc(p.name)}</td><td>${p.correct}</td><td>${p.wrong}</td></tr>`
+    `<tr><td><span class="token">${AVATARS[p.id]}</span>${esc(p.name)}</td><td>${p.correct}</td><td>${p.wrong}</td></tr>`
   ).join('');
   return `<h1>🏆 ¡${esc(winner.name)} llegó a Alfa Centauri!</h1>
     <div class="card">

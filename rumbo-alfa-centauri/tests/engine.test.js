@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, orderByDifficulty,
 } = require('../engine.js');
 const { QUESTIONS } = require('../data.js');
 
@@ -60,11 +60,32 @@ function mulberry32(seed) {
 }
 
 const FIXTURE_QUESTIONS = [
-  { id: 'q1', level: '9-11', category: 'espacio', question: '¿1?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e1' },
-  { id: 'q2', level: '9-11', category: 'fisica', question: '¿2?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e2' },
-  { id: 'q3', level: 'adulto', category: 'quimica', question: '¿3?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e3' },
-  { id: 'q4', level: 'adulto', category: 'biologia', question: '¿4?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e4' },
+  { id: 'q1', level: '9-11', category: 'espacio', difficulty: 1, question: '¿1?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e1' },
+  { id: 'q2', level: '9-11', category: 'fisica', difficulty: 2, question: '¿2?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e2' },
+  { id: 'q3', level: 'adulto', category: 'quimica', difficulty: 1, question: '¿3?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e3' },
+  { id: 'q4', level: 'adulto', category: 'biologia', difficulty: 2, question: '¿4?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e4' },
 ];
+
+test('orderByDifficulty ordena de fácil a difícil, aleatorio dentro de cada nivel de dificultad', () => {
+  const qs = [
+    { id: 'h1', difficulty: 3 }, { id: 'e1', difficulty: 1 },
+    { id: 'm1', difficulty: 2 }, { id: 'm2', difficulty: 2 },
+    { id: 'e2', difficulty: 1 }, { id: 'h2', difficulty: 3 },
+  ];
+  const ordered = orderByDifficulty(qs, mulberry32(42));
+  assert.deepStrictEqual(ordered.map((q) => q.difficulty), [1, 1, 2, 2, 3, 3]);
+});
+
+test('el pool inicial de un nivel queda ordenado de fácil a difícil', () => {
+  const fixture = [
+    { id: 'f-hard', level: '9-11', category: 'espacio', difficulty: 3, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+    { id: 'f-easy', level: '9-11', category: 'espacio', difficulty: 1, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+    { id: 'f-medium', level: '9-11', category: 'espacio', difficulty: 2, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+    { id: 'other', level: 'adulto', category: 'quimica', difficulty: 1, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+  ];
+  const game = createGame(['hijo', 'mama'], fixture, mulberry32(5));
+  assert.deepStrictEqual(game.pools['9-11'].map((q) => q.difficulty), [1, 2, 3]);
+});
 
 test('drawQuestion regresa una pregunta del nivel del jugador activo', () => {
   const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(1));
