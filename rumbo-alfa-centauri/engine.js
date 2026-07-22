@@ -45,18 +45,24 @@ function shuffle(arr, rng) {
   return a;
 }
 
-// Ordena de fácil (difficulty 1) a difícil (difficulty 3), aleatorio dentro
-// de cada nivel de dificultad. Así, entre más preguntas se consumen del pool
-// de un nivel, más difíciles se van poniendo.
-function orderByDifficulty(questions, rng) {
-  const tiers = [1, 2, 3].map((d) => shuffle(questions.filter((q) => q.difficulty === d), rng));
-  return tiers.flat();
+// La dificultad de la pregunta depende de qué tan lejos va el jugador en el
+// tablero: arranca fácil cerca de la Tierra y se pone difícil al acercarse a
+// Alfa Centauri. Índice = casilla del tablero (0..7).
+const POSITION_DIFFICULTY = [1, 1, 2, 2, 2, 3, 3, 3];
+
+function difficultyForPosition(position) {
+  return POSITION_DIFFICULTY[Math.min(position, POSITION_DIFFICULTY.length - 1)];
 }
 
+// pools[level][difficulty] = preguntas barajadas de ese nivel y dificultad,
+// que se consumen sin repetir hasta agotarse (y entonces se rebarajan).
 function buildPools(levels, questions, rng) {
   const pools = {};
   for (const level of levels) {
-    pools[level] = orderByDifficulty(questions.filter((q) => q.level === level), rng);
+    pools[level] = {};
+    for (const d of [1, 2, 3]) {
+      pools[level][d] = shuffle(questions.filter((q) => q.level === level && q.difficulty === d), rng);
+    }
   }
   return pools;
 }
@@ -72,10 +78,7 @@ function createGame(characterIds, questions, rng = Math.random) {
     players,
     currentPlayerIndex: 0,
     pools: buildPools(levels, questions, rng),
-    fullQuestionsByLevel: levels.reduce((acc, l) => {
-      acc[l] = questions.filter((q) => q.level === l);
-      return acc;
-    }, {}),
+    allQuestions: questions,
     rng,
     pendingQuestion: null,
     pendingResult: null,
@@ -91,12 +94,16 @@ function drawQuestion(game) {
   if (game.winnerId) throw new Error('La partida ya terminó');
   if (game.pendingQuestion) throw new Error('Ya hay una pregunta activa sin responder');
   const player = currentPlayer(game);
-  let pool = game.pools[player.level];
+  const difficulty = difficultyForPosition(player.position);
+  let pool = game.pools[player.level][difficulty];
   if (pool.length === 0) {
-    pool = orderByDifficulty(game.fullQuestionsByLevel[player.level], game.rng);
+    pool = shuffle(
+      game.allQuestions.filter((q) => q.level === player.level && q.difficulty === difficulty),
+      game.rng
+    );
   }
   const question = pool[0];
-  game.pools[player.level] = pool.slice(1);
+  game.pools[player.level][difficulty] = pool.slice(1);
   game.pendingQuestion = question;
   return question;
 }
@@ -129,7 +136,7 @@ function advanceTurn(game) {
 
 const RumboEngine = {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, orderByDifficulty,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, difficultyForPosition,
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = RumboEngine;
 if (typeof window !== 'undefined') window.RumboEngine = RumboEngine;

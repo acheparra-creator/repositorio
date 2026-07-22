@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   CHARACTERS, BOARD, GOAL_POSITION,
-  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, orderByDifficulty,
+  validateSelection, createGame, currentPlayer, drawQuestion, submitAnswer, advanceTurn, difficultyForPosition,
 } = require('../engine.js');
 const { QUESTIONS } = require('../data.js');
 
@@ -60,31 +60,37 @@ function mulberry32(seed) {
 }
 
 const FIXTURE_QUESTIONS = [
-  { id: 'q1', level: '9-11', category: 'espacio', difficulty: 1, question: '¿1?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e1' },
-  { id: 'q2', level: '9-11', category: 'fisica', difficulty: 2, question: '¿2?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e2' },
-  { id: 'q3', level: 'adulto', category: 'quimica', difficulty: 1, question: '¿3?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e3' },
-  { id: 'q4', level: 'adulto', category: 'biologia', difficulty: 2, question: '¿4?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e4' },
+  // 9-11: 2 preguntas por cada dificultad
+  { id: 'e1', level: '9-11', category: 'espacio', difficulty: 1, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+  { id: 'e2', level: '9-11', category: 'fisica', difficulty: 1, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+  { id: 'm1', level: '9-11', category: 'biologia', difficulty: 2, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e' },
+  { id: 'm2', level: '9-11', category: 'quimica', difficulty: 2, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e' },
+  { id: 'h1', level: '9-11', category: 'espacio', difficulty: 3, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e' },
+  { id: 'h2', level: '9-11', category: 'fisica', difficulty: 3, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e' },
+  // adulto: una por dificultad (para pruebas con mamá/papá)
+  { id: 'ae1', level: 'adulto', category: 'quimica', difficulty: 1, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
+  { id: 'am1', level: 'adulto', category: 'biologia', difficulty: 2, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 1, explanation: 'e' },
+  { id: 'ah1', level: 'adulto', category: 'espacio', difficulty: 3, question: '¿?', options: ['a', 'b', 'c'], correctIndex: 2, explanation: 'e' },
 ];
 
-test('orderByDifficulty ordena de fácil a difícil, aleatorio dentro de cada nivel de dificultad', () => {
-  const qs = [
-    { id: 'h1', difficulty: 3 }, { id: 'e1', difficulty: 1 },
-    { id: 'm1', difficulty: 2 }, { id: 'm2', difficulty: 2 },
-    { id: 'e2', difficulty: 1 }, { id: 'h2', difficulty: 3 },
-  ];
-  const ordered = orderByDifficulty(qs, mulberry32(42));
-  assert.deepStrictEqual(ordered.map((q) => q.difficulty), [1, 1, 2, 2, 3, 3]);
+test('difficultyForPosition mapea casilla del tablero a dificultad (fácil cerca de la Tierra, difícil cerca de la meta)', () => {
+  assert.strictEqual(difficultyForPosition(0), 1);
+  assert.strictEqual(difficultyForPosition(1), 1);
+  assert.strictEqual(difficultyForPosition(2), 2);
+  assert.strictEqual(difficultyForPosition(4), 2);
+  assert.strictEqual(difficultyForPosition(5), 3);
+  assert.strictEqual(difficultyForPosition(6), 3);
 });
 
-test('el pool inicial de un nivel queda ordenado de fácil a difícil', () => {
-  const fixture = [
-    { id: 'f-hard', level: '9-11', category: 'espacio', difficulty: 3, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
-    { id: 'f-easy', level: '9-11', category: 'espacio', difficulty: 1, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
-    { id: 'f-medium', level: '9-11', category: 'espacio', difficulty: 2, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
-    { id: 'other', level: 'adulto', category: 'quimica', difficulty: 1, question: 'q', options: ['a', 'b', 'c'], correctIndex: 0, explanation: 'e' },
-  ];
-  const game = createGame(['hijo', 'mama'], fixture, mulberry32(5));
-  assert.deepStrictEqual(game.pools['9-11'].map((q) => q.difficulty), [1, 2, 3]);
+test('drawQuestion escoge una pregunta cuya dificultad corresponde a la casilla del jugador', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(1));
+  assert.strictEqual(drawQuestion(game).difficulty, 1); // casilla 0 -> fácil
+  game.pendingQuestion = null;
+  currentPlayer(game).position = 3;
+  assert.strictEqual(drawQuestion(game).difficulty, 2); // casilla 3 -> media
+  game.pendingQuestion = null;
+  currentPlayer(game).position = 6;
+  assert.strictEqual(drawQuestion(game).difficulty, 3); // casilla 6 -> difícil
 });
 
 test('drawQuestion regresa una pregunta del nivel del jugador activo', () => {
@@ -94,21 +100,17 @@ test('drawQuestion regresa una pregunta del nivel del jugador activo', () => {
   assert.strictEqual(game.pendingQuestion, q);
 });
 
-test('drawQuestion no repite preguntas dentro de la partida hasta agotar el pool, y luego se reinicia', () => {
-  const game = createGame(['mama', 'papa'], FIXTURE_QUESTIONS, mulberry32(2));
-  // mamá y papá comparten nivel 'adulto', que solo tiene 2 preguntas en el fixture (q3, q4)
+test('drawQuestion no repite preguntas de la misma dificultad hasta agotar ese grupo, y luego lo reinicia', () => {
+  const game = createGame(['hijo', 'mama'], FIXTURE_QUESTIONS, mulberry32(2));
+  // hijo se queda en casilla 0 (dificultad 1); el fixture 9-11 fácil tiene e1 y e2
   const seen = [];
-  for (let i = 0; i < 4; i++) {
-    const q = drawQuestion(game);
-    seen.push(q.id);
-    game.pendingQuestion = null; // simula que ya se procesó el turno sin usar answerQuestion todavía
+  for (let i = 0; i < 3; i++) {
+    seen.push(drawQuestion(game).id);
+    game.pendingQuestion = null; // simula que ya se procesó el turno
   }
-  // las primeras 2 no deben repetirse entre sí
   assert.notStrictEqual(seen[0], seen[1]);
-  assert.deepStrictEqual(new Set(seen.slice(0, 2)), new Set(['q3', 'q4']));
-  // tras agotar el pool de 2, la 3ra y 4ta vienen del pool reiniciado
-  assert.ok(['q3', 'q4'].includes(seen[2]));
-  assert.ok(['q3', 'q4'].includes(seen[3]));
+  assert.deepStrictEqual(new Set(seen.slice(0, 2)), new Set(['e1', 'e2']));
+  assert.ok(['e1', 'e2'].includes(seen[2])); // 3ra viene del grupo reiniciado
 });
 
 test('drawQuestion lanza error si ya hay una pregunta pendiente sin responder', () => {

@@ -1,9 +1,9 @@
 // rumbo-alfa-centauri/data.js
 'use strict';
 
-// difficulty es relativo al propio nivel (1=fácil, 2=media, 3=difícil):
-// el motor ordena el pool de cada nivel de fácil a difícil, así que entre
-// más preguntas responde un jugador de su nivel, más difíciles se ponen.
+// difficulty es relativo al propio nivel (1=fácil, 2=media, 3=difícil): el
+// motor escoge la dificultad según la casilla del tablero en que va el jugador,
+// así que las preguntas se ponen más difíciles al acercarse a Alfa Centauri.
 const QUESTIONS = [
   // --- Nivel 9-11 · Espacio y astronomía ---
   { id: 'espacio-9-11-01', level: '9-11', category: 'espacio', difficulty: 1, question: '¿Cuál es el planeta más cercano al Sol?', options: ['Venus', 'Mercurio', 'Marte'], correctIndex: 1, explanation: 'Mercurio es el planeta más cercano al Sol; tarda solo 88 días en darle la vuelta.' },
