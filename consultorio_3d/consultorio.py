@@ -1,4 +1,4 @@
-"""Modelo 3D del consultorio N1-07 (Tipo A, opcion C) a partir del plano A-03.
+"""Modelo 3D del consultorio N1-07 (Tipo A, opcion C) a partir del plano A-03, revision 1 (plano_consultorio_v6).
 
 Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
@@ -24,6 +24,25 @@ H = 2.70                     # piso a losa
 DOOR_H = 2.10
 
 random.seed(7)
+import os
+ART = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arte_tv.png')
+def make_art():
+    from PIL import Image, ImageDraw, ImageFilter
+    r = random.Random(11); w, h = 1600, 916
+    im = Image.new('RGB', (w, h), (226, 219, 205)); d = ImageDraw.Draw(im)
+    x0, y0, x1, y1 = 150, 110, w - 150, h - 110          # paspartu
+    d.rectangle([x0, y0, x1, y1], fill=(196, 184, 163))
+    d.rectangle([x0, y0 + 300, x1, y1], fill=(120, 112, 100))
+    d.ellipse([x0 + 180, y0 + 90, x0 + 620, y0 + 530], fill=(28, 27, 26))
+    d.rectangle([x0 + 560, y0 + 230, x0 + 1010, y1 - 90], fill=(92, 52, 28))
+    d.pieslice([x0 + 800, y0 + 60, x0 + 1240, y0 + 500], 180, 360, fill=(170, 150, 120))
+    d.line([x0 + 60, y1 - 150, x1 - 60, y1 - 150], fill=(28, 27, 26), width=6)
+    im = im.filter(ImageFilter.GaussianBlur(1.2))
+    px = im.load()
+    for _ in range(90000):
+        x, y = r.randrange(w), r.randrange(h); c = px[x, y]; k = r.randint(-9, 9); px[x, y] = tuple(max(0, min(255, v + k)) for v in c)
+    im.save(ART)
+make_art()
 bpy.ops.wm.read_factory_settings(use_empty=True)
 scene = bpy.context.scene
 col_main = scene.collection
@@ -279,11 +298,11 @@ for sx, sy in [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), 
     lo = bpy.data.objects.new('spotl', ld); lo.location = (sx, sy, H - 0.02); col_main.objects.link(lo)
 
 # ---- muro oeste: panel de listones de nogal detras del sillon ----
-box('panel_fondo', 0, 0.012, 2.10, 4.00, 0, 2.55, 'dark')
-y = 2.115
-while y < 3.99:
+box('panel_fondo', 0, 0.012, 1.28, 4.14, 0, 2.55, 'dark')
+y = 1.295
+while y < 4.13:
     box('liston', 0.012, 0.040, y, y + 0.032, 0, 2.55, 'wal_z'); y += 0.06
-box('led_listones', 0.045, 0.06, 2.10, 4.00, 2.535, 2.548, 'led_soft')
+box('led_listones', 0.045, 0.06, 1.28, 4.14, 2.535, 2.548, 'led_soft')
 
 # ---- ARBOL: centro (0.30, 4.40) ----
 box('arbol_maceta', 0.16, 0.44, 4.26, 4.54, 0, 0.42, 'conc', 0.012)
@@ -293,27 +312,29 @@ tube('arbol_rama1', [(0.29, 4.39, 1.1), (0.38, 4.47, 1.4), (0.42, 4.52, 1.7)], 0
 tube('arbol_rama2', [(0.30, 4.40, 1.2), (0.24, 4.30, 1.5), (0.22, 4.26, 1.8)], 0.008, 'trunk')
 foliage('arbol_hojas', (0.31, 4.40, 1.50), (0.27, 0.28, 0.48), 650, 0.075)
 
-# ---- SILLON 2 PLAZAS: x 0-0.70, y 2.30-3.80 ----
-box('sillon_base', 0.02, 0.70, 2.30, 3.80, 0.10, 0.26, 'fab_greige', 0.02, smooth=True)
-box('sillon_respaldo', 0.0, 0.15, 2.30, 3.80, 0.10, 0.78, 'fab_greige', 0.03, smooth=True)
-box('sillon_brazo_s', 0.0, 0.70, 2.30, 2.45, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
-box('sillon_brazo_n', 0.0, 0.70, 3.65, 3.80, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
-box('sillon_asiento_s', 0.15, 0.70, 2.455, 3.047, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
-box('sillon_asiento_n', 0.15, 0.70, 3.053, 3.645, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
-box('sillon_cojin_s', 0.15, 0.29, 2.455, 3.047, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
-box('sillon_cojin_n', 0.15, 0.29, 3.053, 3.645, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
+# ---- SILLON 2 PLAZAS: x 0-0.70, y 1.431-2.931 (0.27 de la camilla y 0.27 bajo la linea del escritorio) ----
+SY = 1.431
+box('sillon_base', 0.02, 0.70, SY, SY + 1.50, 0.10, 0.26, 'fab_greige', 0.02, smooth=True)
+box('sillon_respaldo', 0.0, 0.15, SY, SY + 1.50, 0.10, 0.78, 'fab_greige', 0.03, smooth=True)
+box('sillon_brazo_s', 0.0, 0.70, SY, SY + 0.15, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
+box('sillon_brazo_n', 0.0, 0.70, SY + 1.35, SY + 1.50, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
+box('sillon_asiento_s', 0.15, 0.70, SY + 0.155, SY + 0.747, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
+box('sillon_asiento_n', 0.15, 0.70, SY + 0.753, SY + 1.345, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
+box('sillon_cojin_s', 0.15, 0.29, SY + 0.155, SY + 0.747, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
+box('sillon_cojin_n', 0.15, 0.29, SY + 0.753, SY + 1.345, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
 for lx in (0.06, 0.64):
-    for ly in (2.36, 3.74):
+    for ly in (SY + 0.06, SY + 1.44):
         box('sillon_pata', lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, 0.10, 'black')
 
-# ---- BASCULA: x 0-0.40, y 1.60-2.00 ----
-box('bascula_base', 0.0, 0.40, 1.60, 2.00, 0, 0.06, 'black', 0.008)
-box('bascula_plato', 0.03, 0.37, 1.72, 1.97, 0.06, 0.068, 'steel', 0.004)
-box('bascula_columna', 0.17, 0.23, 1.62, 1.67, 0.06, 1.32, 'black', 0.004)
-box('bascula_cabezal', 0.06, 0.34, 1.60, 1.69, 1.32, 1.40, 'black', 0.008)
-box('bascula_display', 0.10, 0.30, 1.688, 1.692, 1.34, 1.385, 'screen')
-box('bascula_estadimetro', 0.245, 0.26, 1.63, 1.645, 0.10, 2.00, 'steel')
-box('bascula_tope', 0.245, 0.26, 1.645, 1.83, 1.985, 2.00, 'steel')
+# ---- CREDENZA 1.00 x 0.35: x 0-0.35, y 3.063-4.063 (altura supuesta 0.75) ----
+KY0, KY1, KH = 3.063, 4.063, 0.75
+box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
+box('credenza_cuerpo', 0.0, 0.33, KY0, KY1, 0.08, KH - 0.02, 'dark')
+box('credenza_costado_s', 0.0, 0.35, KY0, KY0 + 0.018, 0.08, KH - 0.02, 'wal_z'); box('credenza_costado_n', 0.0, 0.35, KY1 - 0.018, KY1, 0.08, KH - 0.02, 'wal_z')
+box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, 0.0815, KH - 0.0215, 'wal_z'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, 0.0815, KH - 0.0215, 'wal_z')
+box('credenza_cubierta', 0.0, 0.36, KY0 - 0.005, KY1 + 0.005, KH - 0.02, KH, 'wal_y', 0.002)
+cyl('credenza_jarron', 0.17, 3.36, KH, KH + 0.26, 0.05, 'conc', 24, 0.03)
+box('credenza_libro1', 0.06, 0.28, 3.68, 3.94, KH, KH + 0.03, BOOKS[1]); box('credenza_libro2', 0.08, 0.27, 3.70, 3.92, KH + 0.03, KH + 0.055, BOOKS[0])
 
 # ---- CAMILLA: x 0.70-2.60, y 0.45-1.15; cabecera x 0.70-0.95 ----
 CZ = 0.62
@@ -332,6 +353,9 @@ for lx in (0.80, 2.50):
         box('camilla_pata', lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, CZ - 0.05, 'black')
 box('camilla_travesano_o', 0.78, 0.82, 0.52, 1.08, 0.18, 0.22, 'black'); box('camilla_travesano_e', 2.48, 2.52, 0.52, 1.08, 0.18, 0.22, 'black')
 box('camilla_larguero', 0.80, 2.50, 0.78, 0.82, 0.18, 0.22, 'black')
+
+for o in bpy.data.objects:
+    if o.name.startswith('camilla'): o.location.y += 0.008
 
 # ---- ESCRITORIO: x 2.20-2.75, y 3.20-4.80 (pegado al muro del bano) ----
 box('escritorio_cubierta', 2.20, 2.75, 3.20, 4.80, 0.71, 0.75, 'wal_y', 0.003)
@@ -365,10 +389,24 @@ for k in range(5):
                                  (3.14 + 0.23 * math.cos(a), 3.80 + 0.23 * math.sin(a), 0.055)], 0.014, 'black')
     cyl('silla_med_rueda%d' % k, 3.14 + 0.23 * math.cos(a), 3.80 + 0.23 * math.sin(a), 0, 0.05, 0.022, 'black', 12)
 
-# ---- TV: x 3.566-3.686 (incluye soporte), y 2.35-3.05 ----
-box('tv_soporte', 3.626, W, 2.60, 2.80, 1.42, 1.58, 'black')
-box('tv', 3.596, 3.626, 2.35, 3.05, 1.30, 1.70, 'black', 0.003)
-box('tv_pantalla', 3.5955, 3.597, 2.358, 3.042, 1.308, 1.692, 'screen')
+# ---- TV tipo cuadro (Samsung The Frame 55": 1.238 x 0.709 m, 2.5 cm de fondo), muro este, centro y 2.70 ----
+TVY, TVZ, TVW, TVH = 2.70, 1.45, 1.238, 0.709
+def tv_art():
+    m, nt, b = mat_new('tv_arte')
+    tc = nt.nodes.new('ShaderNodeTexCoord'); sp = nt.nodes.new('ShaderNodeSeparateXYZ'); cb = nt.nodes.new('ShaderNodeCombineXYZ')
+    nt.links.new(tc.outputs['Object'], sp.inputs[0])
+    def lin(sock, a, k):
+        n1 = nt.nodes.new('ShaderNodeMath'); n1.operation = 'SUBTRACT'; n1.inputs[1].default_value = a
+        n2 = nt.nodes.new('ShaderNodeMath'); n2.operation = 'DIVIDE'; n2.inputs[1].default_value = k
+        nt.links.new(sock, n1.inputs[0]); nt.links.new(n1.outputs[0], n2.inputs[0]); return n2.outputs[0]
+    nt.links.new(lin(sp.outputs['Y'], TVY - TVW / 2, TVW), cb.inputs['X']); nt.links.new(lin(sp.outputs['Z'], TVZ - TVH / 2, TVH), cb.inputs['Y'])
+    im = nt.nodes.new('ShaderNodeTexImage'); im.image = bpy.data.images.load(ART); im.extension = 'EXTEND'
+    nt.links.new(cb.outputs[0], im.inputs['Vector'])
+    nt.links.new(im.outputs['Color'], b.inputs['Base Color']); nt.links.new(im.outputs['Color'], b.inputs['Emission Color'])
+    b.inputs['Emission Strength'].default_value = 0.9; b.inputs['Roughness'].default_value = 0.6
+    return m
+box('tv_marco', W - 0.025, W, TVY - TVW / 2, TVY + TVW / 2, TVZ - TVH / 2, TVZ + TVH / 2, 'wal_y', 0.002)
+box('tv_pantalla', W - 0.0265, W - 0.024, TVY - TVW / 2 + 0.012, TVY + TVW / 2 - 0.012, TVZ - TVH / 2 + 0.012, TVZ + TVH / 2 - 0.012, tv_art())
 
 # ---- BARRA CON TARJA: x 3.186-3.686, y 0.15-1.85; divisiones y 0.40 y 1.45; tarja x 3.241-3.631, y 0.60-1.10 ----
 BX0, BY0, BY1, BH = 3.186, 0.15, 1.85, 0.90
@@ -408,13 +446,6 @@ for k in range(7):
     box('libro%d' % k, W - 0.24, W - 0.06, yb, yb + w, UZ0 + 0.03, UZ0 + 0.03 + h, random.choice(BOOKS)); yb += w + 0.002
 cyl('nicho_maceta', W - 0.16, 1.02, UZ0 + 0.03, UZ0 + 0.13, 0.05, 'conc', 24, 0.06); foliage('nicho_planta', (W - 0.16, 1.02, UZ0 + 0.22), (0.10, 0.11, 0.10), 150, 0.045)
 
-# ---- cuadro abstracto sobre el muro del bano ----
-box('cuadro_marco', 2.95, 3.55, 4.775, 4.80, 1.25, 2.05, 'black')
-box('cuadro_fondo', 2.97, 3.53, 4.772, 4.776, 1.27, 2.03, flat('lienzo', (0.55, 0.50, 0.42), 0.9))
-box('cuadro_mancha1', 3.02, 3.30, 4.770, 4.773, 1.55, 1.95, flat('lienzo_n', (0.02, 0.02, 0.02), 0.9))
-box('cuadro_mancha2', 3.22, 3.48, 4.768, 4.771, 1.33, 1.70, flat('lienzo_c', (0.16, 0.085, 0.04), 0.9))
-box('cuadro_mancha3', 3.06, 3.20, 4.769, 4.772, 1.36, 1.50, flat('lienzo_g', (0.25, 0.25, 0.24), 0.9))
-
 # ---------------- luz natural ----------------
 w = bpy.data.worlds.new('w'); scene.world = w; w.use_nodes = True
 bg = w.node_tree.nodes['Background']; bg.inputs['Color'].default_value = (0.75, 0.85, 1.0, 1); bg.inputs['Strength'].default_value = 1.6
@@ -444,6 +475,7 @@ CAMS = [
     cam('2_desde_ventanal', (3.05, 0.20, 1.55), (0.55, 4.50, 1.55), 14, shift_y=-0.10, exposure=0.8),
     cam('3_escritorio', (0.40, 2.05, 1.45), (2.90, 4.40, 1.45), 16, shift_y=-0.08, exposure=0.8),
     cam('4_barra_tarja', (1.15, 2.75, 1.35), (3.60, 0.95, 1.35), 21, shift_y=-0.05, exposure=0.7),
+    cam('5_tv_cuadro', (0.85, 2.30, 1.25), (3.686, 2.72, 1.25), 17, shift_y=0.06, exposure=0.8),
     cam('0_planta', (W / 2, L / 2, 9.0), (W / 2, L / 2, 0), 50, ortho=6.5, aspect=4.0 / 6.5, exposure=0.6, hide_ceiling=True),
 ]
 for c in CAMS:
