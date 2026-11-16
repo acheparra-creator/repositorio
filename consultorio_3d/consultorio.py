@@ -5,10 +5,11 @@ Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
 Las alturas NO vienen en el plano: son supuestos (ver constantes).
 
-Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D|E]
+Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D|E|F]
 A y B: concreto aparente + nogal, con acabados distintos. C: moderno sencillo y atemporal (blanco calido, roble natural, sin acentos).
 D: como C pero enfocado en amplitud (espejo en muro oeste, muebles volados, muros banados de luz, ventanal despejado).
 E: la paleta y acabados de B (concreto, nogal, antracita) con los recursos de amplitud: muebles volados y luz rasante (sin espejo).
+F: igual que E pero sin el acabado de madera en el muro del bano (queda liso en antracita).
 """
 import sys, math, random
 import bpy
@@ -20,7 +21,8 @@ RESX = int(sys.argv[2]) if len(sys.argv) > 2 else 640
 SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 32
 ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 and sys.argv[4] != 'all' else None
 V = sys.argv[5].upper() if len(sys.argv) > 5 else 'A'
-E = V == 'E'
+F = V == 'F'
+E = V == 'E' or F          # F parte de E
 B = V == 'B' or E          # E parte de la base de B
 D = V == 'D'
 AMP = D or E               # recursos de amplitud
@@ -375,10 +377,11 @@ elif B:
     box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
     if E:
         box('bano_luz_e', W - 0.10, W - 0.07, 0.2, 4.7, H - 0.006, H, 'led', coll=col_ceil)
-    box('listones_fondo', 1.90, W, 4.788, 4.80, 0, ZP, 'dark')
-    x = 1.915
-    while x < W - 0.03:
-        box('liston_b', x, x + 0.032, 4.76, 4.788, 0, ZP, 'wal_z'); x += 0.06
+    if not F:
+        box('listones_fondo', 1.90, W, 4.788, 4.80, 0, ZP, 'dark')
+        x = 1.915
+        while x < W - 0.03:
+            box('liston_b', x, x + 0.032, 4.76, 4.788, 0, ZP, 'wal_z'); x += 0.06
     box('led_listones_b', 1.92, W - 0.02, 4.74, 4.755, H - 0.012, H, 'led_soft', coll=col_ceil)
 if C:
     # C y D: muros lisos y salpicadero de cuarzo en la barra
@@ -411,7 +414,7 @@ if (B or C) and not D:
 
 # ---- MINI SPLIT (rev. 2): unidad interior en el muro del bano, x 1.948-2.897, fondo 0.22, h = 2.20 m ----
 M['ac'] = flat('ac_blanco', (0.80, 0.80, 0.79), 0.35)
-AY1 = 4.76 if B else 4.80                       # en B/E va sobre los listones
+AY1 = 4.76 if B and not F else 4.80                       # en B/E va sobre los listones
 box('minisplit', 1.948, 2.897, AY1 - 0.22, AY1, 2.20, 2.50, 'ac', 0.03, smooth=True)
 box('minisplit_rejilla', 1.99, 2.855, AY1 - 0.215, AY1 - 0.06, 2.194, 2.20, 'dark')
 box('minisplit_display', 2.78, 2.84, AY1 - 0.222, AY1 - 0.22, 2.27, 2.285, 'screen')
