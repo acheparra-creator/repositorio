@@ -4,9 +4,10 @@ Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
 Las alturas NO vienen en el plano: son supuestos (ver constantes).
 
-Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D]
+Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D|E]
 A y B: concreto aparente + nogal, con acabados distintos. C: moderno sencillo y atemporal (blanco calido, roble natural, sin acentos).
 D: como C pero enfocado en amplitud (espejo en muro oeste, muebles volados, muros banados de luz, ventanal despejado).
+E: la paleta y acabados de B (concreto, nogal, antracita) con los recursos de amplitud: espejo bronce tras el sillon, muebles volados, luz rasante.
 """
 import sys, math, random
 import bpy
@@ -18,8 +19,10 @@ RESX = int(sys.argv[2]) if len(sys.argv) > 2 else 640
 SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 32
 ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 and sys.argv[4] != 'all' else None
 V = sys.argv[5].upper() if len(sys.argv) > 5 else 'A'
-B = V == 'B'
+E = V == 'E'
+B = V == 'B' or E          # E parte de la base de B
 D = V == 'D'
+AMP = D or E               # recursos de amplitud
 C = V == 'C' or D          # D parte de la base clara de C
 
 # ---------- cotas del plano (m) ----------
@@ -190,6 +193,7 @@ M = dict(
     patio_wall=flat('muro_patio', (0.36, 0.345, 0.32), 0.9),
     patio_floor=flat('piso_patio', (0.33, 0.32, 0.30), 0.8),
 )
+M['mirror_bronze'] = flat('espejo_bronce', (0.62, 0.50, 0.40), 0.0, 1.0)
 M['anthr'] = flat('muro_antracita', (0.045, 0.045, 0.047), 0.85)
 M['graphite'] = flat('tela_grafito', (0.085, 0.083, 0.08), 0.95)
 M['greige_leather'] = flat('piel_greige', (0.30, 0.27, 0.225), 0.45)
@@ -352,12 +356,20 @@ elif B:
     # B: tableros lisos de nogal en el muro oeste + listones de nogal en el muro detras del escritorio
     box('tablero_fondo', 0, 0.006, 1.28, 4.14, 0, ZP, 'dark')
     y = 1.28
+    if E:
+        # espejo bronce de piso a techo detras del sillon; el nogal queda solo tras la credenza
+        for k in range(3):
+            box('espejo%d' % k, 0.006, 0.012, 1.28 + k * 0.572 + 0.002, 1.28 + (k + 1) * 0.572 - 0.002, 0.0, ZP, 'mirror_bronze')
+        y = 1.28 + 3 * 0.572
     while y < 4.13:
         box('tablero', 0.006, 0.022, y + 0.002, y + 0.57, 0, ZP, 'wal_z'); y += 0.572
     box('led_tablero', 0.03, 0.045, 1.30, 4.12, 0.0, 0.012, 'led_soft')
-    box('cuadro_marco', 0.022, 0.045, 1.78, 2.58, 1.20, 1.80, 'black')
-    box('cuadro_lienzo', 0.045, 0.048, 1.80, 2.56, 1.22, 1.78, 'art_a')
-    box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
+    if not E:
+        box('cuadro_marco', 0.022, 0.045, 1.78, 2.58, 1.20, 1.80, 'black')
+        box('cuadro_lienzo', 0.045, 0.048, 1.80, 2.56, 1.22, 1.78, 'art_a')
+        box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
+    if E:
+        box('bano_luz_e', W - 0.10, W - 0.07, 0.2, 4.7, H - 0.006, H, 'led', coll=col_ceil)
     box('listones_fondo', 1.90, W, 4.788, 4.80, 0, ZP, 'dark')
     x = 1.915
     while x < W - 0.03:
@@ -414,7 +426,7 @@ for lx in (0.06, 0.64):
     for ly in (SY + 0.06, SY + 1.44):
         box('sillon_pata', lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, 0.10, 'black')
 
-if D:
+if AMP:
     for o in bpy.data.objects:
         if o.name.startswith('sillon_') and not o.name.startswith('sillon_pata'): o.location.z += 0.07
     for lx in (0.06, 0.64):
@@ -423,8 +435,8 @@ if D:
 
 # ---- CREDENZA 1.00 x 0.35: x 0-0.35, y 3.063-4.063 (altura supuesta 0.75) ----
 KY0, KY1, KH = 3.063, 4.063, 0.75
-KZ = 0.32 if D else 0.08
-if not D: box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
+KZ = 0.32 if AMP else 0.08
+if not AMP: box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
 box('credenza_cuerpo', 0.0, 0.33, KY0, KY1, KZ, KH - 0.02, 'dark')
 box('credenza_costado_s', 0.0, 0.35, KY0, KY0 + 0.018, KZ, KH - 0.02, 'wal_z'); box('credenza_costado_n', 0.0, 0.35, KY1 - 0.018, KY1, KZ, KH - 0.02, 'wal_z')
 box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, KZ + 0.0015, KH - 0.0215, 'cred_front'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, KZ + 0.0015, KH - 0.0215, 'cred_front')
@@ -455,7 +467,7 @@ for o in bpy.data.objects:
 
 # ---- ESCRITORIO: x 2.20-2.75, y 3.20-4.80 (pegado al muro del bano) ----
 box('escritorio_cubierta', 2.20, 2.75, 3.20, 4.80, 0.71, 0.75, 'wal_y', 0.003)
-if D:
+if AMP:
     for lx in (2.225, 2.725):
         box('escritorio_pata', lx - 0.015, lx + 0.015, 3.22, 3.25, 0, 0.71, 'black')
     box('escritorio_travesano', 2.21, 2.74, 3.22, 3.25, 0.68, 0.71, 'black')
