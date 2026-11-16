@@ -193,7 +193,7 @@ M = dict(
     patio_wall=flat('muro_patio', (0.36, 0.345, 0.32), 0.9),
     patio_floor=flat('piso_patio', (0.33, 0.32, 0.30), 0.8),
 )
-M['mirror_bronze'] = flat('espejo_bronce', (0.62, 0.50, 0.40), 0.0, 1.0)
+M['mirror_bronze'] = flat('espejo_bronce', (0.50, 0.36, 0.25), 0.0, 1.0)
 M['anthr'] = flat('muro_antracita', (0.045, 0.045, 0.047), 0.85)
 M['graphite'] = flat('tela_grafito', (0.085, 0.083, 0.08), 0.95)
 M['greige_leather'] = flat('piel_greige', (0.30, 0.27, 0.225), 0.45)
