@@ -4,7 +4,8 @@ Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
 Las alturas NO vienen en el plano: son supuestos (ver constantes).
 
-Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma]
+Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B]
+A y B comparten plano y estilo; cambian acabados de muros, techo, iluminacion y tapices.
 """
 import sys, math, random
 import bpy
@@ -14,7 +15,9 @@ from mathutils import Vector
 OUT = sys.argv[1]
 RESX = int(sys.argv[2]) if len(sys.argv) > 2 else 640
 SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 32
-ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 else None
+ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 and sys.argv[4] != 'all' else None
+V = sys.argv[5].upper() if len(sys.argv) > 5 else 'A'
+B = V == 'B'
 
 # ---------- cotas del plano (m) ----------
 W, L = 3.686, 6.0            # interior
@@ -25,18 +28,26 @@ DOOR_H = 2.10
 
 random.seed(7)
 import os
-ART = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arte_tv.png')
+ART = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arte_tv_b.png' if B else 'arte_tv.png')
 def make_art():
     from PIL import Image, ImageDraw, ImageFilter
     r = random.Random(11); w, h = 1600, 916
     im = Image.new('RGB', (w, h), (226, 219, 205)); d = ImageDraw.Draw(im)
     x0, y0, x1, y1 = 150, 110, w - 150, h - 110          # paspartu
-    d.rectangle([x0, y0, x1, y1], fill=(196, 184, 163))
-    d.rectangle([x0, y0 + 300, x1, y1], fill=(120, 112, 100))
-    d.ellipse([x0 + 180, y0 + 90, x0 + 620, y0 + 530], fill=(28, 27, 26))
-    d.rectangle([x0 + 560, y0 + 230, x0 + 1010, y1 - 90], fill=(92, 52, 28))
-    d.pieslice([x0 + 800, y0 + 60, x0 + 1240, y0 + 500], 180, 360, fill=(170, 150, 120))
-    d.line([x0 + 60, y1 - 150, x1 - 60, y1 - 150], fill=(28, 27, 26), width=6)
+    if not B:
+        d.rectangle([x0, y0, x1, y1], fill=(196, 184, 163))
+        d.rectangle([x0, y0 + 300, x1, y1], fill=(120, 112, 100))
+        d.ellipse([x0 + 180, y0 + 90, x0 + 620, y0 + 530], fill=(28, 27, 26))
+        d.rectangle([x0 + 560, y0 + 230, x0 + 1010, y1 - 90], fill=(92, 52, 28))
+        d.pieslice([x0 + 800, y0 + 60, x0 + 1240, y0 + 500], 180, 360, fill=(170, 150, 120))
+        d.line([x0 + 60, y1 - 150, x1 - 60, y1 - 150], fill=(28, 27, 26), width=6)
+    else:
+        d.rectangle([x0, y0, x1, y1], fill=(58, 56, 54))
+        for k, c in enumerate([(92, 88, 82), (150, 138, 120), (200, 188, 168)]):
+            d.rectangle([x0 + 90 + k * 250, y0 + 80 + k * 70, x0 + 330 + k * 250, y1 - 80], fill=c)
+        d.rectangle([x0 + 880, y0 + 150, x1 - 90, y1 - 200], fill=(96, 55, 30))
+        d.arc([x0 + 500, y0 + 60, x1 - 60, y1 + 400], 200, 330, fill=(226, 219, 205), width=10)
+        d.ellipse([x1 - 330, y0 + 70, x1 - 190, y0 + 210], fill=(20, 20, 20))
     im = im.filter(ImageFilter.GaussianBlur(1.2))
     px = im.load()
     for _ in range(90000):
@@ -118,10 +129,11 @@ def tile(name):
     br = nt.nodes.new('ShaderNodeTexBrick')
     br.inputs['Scale'].default_value = 1.0
     br.inputs['Brick Width'].default_value = 1.2
-    br.inputs['Row Height'].default_value = 0.6
+    br.inputs['Row Height'].default_value = 1.2 if B else 0.6
+    if B: br.offset = 0.0
     br.inputs['Mortar Size'].default_value = 0.003
-    br.inputs['Color1'].default_value = (0.235, 0.225, 0.208, 1)
-    br.inputs['Color2'].default_value = (0.25, 0.24, 0.222, 1)
+    br.inputs['Color1'].default_value = (0.15, 0.145, 0.137, 1) if B else (0.235, 0.225, 0.208, 1)
+    br.inputs['Color2'].default_value = (0.16, 0.155, 0.146, 1) if B else (0.25, 0.24, 0.222, 1)
     br.inputs['Mortar'].default_value = (0.09, 0.088, 0.085, 1)
     nt.links.new(mp.outputs[0], br.inputs['Vector'])
     n = nt.nodes.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = 2.5; n.inputs['Detail'].default_value = 8
@@ -175,6 +187,14 @@ M = dict(
     patio_wall=flat('muro_patio', (0.36, 0.345, 0.32), 0.9),
     patio_floor=flat('piso_patio', (0.33, 0.32, 0.30), 0.8),
 )
+M['anthr'] = flat('muro_antracita', (0.045, 0.045, 0.047), 0.85)
+M['graphite'] = flat('tela_grafito', (0.085, 0.083, 0.08), 0.95)
+M['greige_leather'] = flat('piel_greige', (0.30, 0.27, 0.225), 0.45)
+M['sheer'] = flat('cortina', (0.62, 0.59, 0.53), 0.9)
+M['art_a'] = flat('lienzo_a', (0.55, 0.50, 0.42), 0.9); M['art_b'] = flat('lienzo_b', (0.03, 0.03, 0.03), 0.9); M['art_c'] = flat('lienzo_c', (0.17, 0.09, 0.045), 0.9)
+M.update(w_west='greige', w_bath='greige', sofa='fab_greige', chair='fab_dark', cam='leather', desk_base='wal_z', cred_front='wal_z')
+if B: M.update(w_bath='anthr', sofa='graphite', chair='fab_greige', cam='greige_leather', desk_base='dark', cred_front='dark')
+for k in ('w_west', 'w_bath', 'sofa', 'chair', 'cam', 'desk_base', 'cred_front'): M[k] = M[M[k]]
 BOOKS = [flat('libro%d' % i, c, 0.7) for i, c in enumerate(
     [(0.05, 0.05, 0.05), (0.42, 0.39, 0.34), (0.16, 0.10, 0.06), (0.30, 0.30, 0.29), (0.09, 0.09, 0.10), (0.55, 0.51, 0.45)])]
 
@@ -250,10 +270,10 @@ box('puerta_entrada_tapa', 0.30, 1.20, L + 0.06, L + T, 0, DOOR_H, 'dark')
 box('manija_entrada', 1.08, 1.10, L - 0.03, L + 0.02, 1.0, 1.15, 'black')
 
 # ---- bano (muros segun plano; puerta dibujada cerrada) ----
-box('muro_bano_sur', 1.90, W, 4.80, 4.90, 0, H, 'greige')
-box('bano_jamba_s', 1.80, 1.90, 4.80, 4.90, 0, H, 'greige')
-box('bano_jamba_n', 1.80, 1.90, 5.80, 6.00, 0, H, 'greige')
-box('bano_dintel', 1.80, 1.90, 4.90, 5.80, DOOR_H, H, 'greige')
+box('muro_bano_sur', 1.90, W, 4.80, 4.90, 0, H, 'w_bath')
+box('bano_jamba_s', 1.80, 1.90, 4.80, 4.90, 0, H, 'w_bath')
+box('bano_jamba_n', 1.80, 1.90, 5.80, 6.00, 0, H, 'w_bath')
+box('bano_dintel', 1.80, 1.90, 4.90, 5.80, DOOR_H, H, 'w_bath')
 box('puerta_bano', 1.83, 1.87, 4.90, 5.80, 0, DOOR_H, 'wal_z')
 box('manija_bano', 1.78, 1.83, 4.98, 5.00, 1.0, 1.15, 'black')
 # muebles de bano (no se ven con la puerta cerrada; sirven para la planta)
@@ -283,13 +303,19 @@ def soffit(n, x0, x1, y0, y1, lip, led):
     box('plafon_ceja_' + n, *lip, 2.57, 2.62, 'conc_ceil', coll=col_ceil)
     box('led_cornisa_' + n, *led, 2.572, 2.582, 'led', coll=col_ceil)
 SW = 0.35
-soffit('o', 0, SW, 0, L, (SW - 0.02, SW, 0, L), (SW - 0.10, SW - 0.08, 0.1, L - 0.1))
-soffit('e', W - SW, W, 0, 4.80, (W - SW, W - SW + 0.02, 0, 4.80), (W - SW + 0.08, W - SW + 0.10, 0.1, 4.7))
-soffit('s', SW, W - SW, 0, SW, (SW, W - SW, SW - 0.02, SW), (SW, W - SW, SW - 0.10, SW - 0.08))
-soffit('n', 1.90, W - SW, 4.80 - SW, 4.80, (1.90, W - SW, 4.80 - SW, 4.80 - SW + 0.02), (1.95, W - SW, 4.80 - SW + 0.08, 4.80 - SW + 0.10))
+if not B:
+    soffit('o', 0, SW, 0, L, (SW - 0.02, SW, 0, L), (SW - 0.10, SW - 0.08, 0.1, L - 0.1))
+    soffit('e', W - SW, W, 0, 4.80, (W - SW, W - SW + 0.02, 0, 4.80), (W - SW + 0.08, W - SW + 0.10, 0.1, 4.7))
+    soffit('s', SW, W - SW, 0, SW, (SW, W - SW, SW - 0.02, SW), (SW, W - SW, SW - 0.10, SW - 0.08))
+    soffit('n', 1.90, W - SW, 4.80 - SW, 4.80, (1.90, W - SW, 4.80 - SW, 4.80 - SW + 0.02), (1.95, W - SW, 4.80 - SW + 0.08, 4.80 - SW + 0.10))
+else:
+    for lx in (0.95, 2.74):
+        box('led_lineal_%.2f' % lx, lx - 0.015, lx + 0.015, 0.35, 4.45, H - 0.006, H, 'led', coll=col_ceil)
+    box('led_lineal_acceso', 0.885, 0.915, 5.0, 5.9, H - 0.006, H, 'led', coll=col_ceil)
 
 # spots empotrados
-for sx, sy in [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]:
+SPOTS = [(1.85, 0.8), (1.85, 2.4), (3.3, 2.7), (3.05, 3.8), (0.35, 2.2), (0.35, 3.55)] if B else [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]
+for sx, sy in SPOTS:
     c = cyl('spot_%.1f_%.1f' % (sx, sy), sx, sy, H - 0.004, H, 0.04, 'spot', 24)
     for cc in c.users_collection: cc.objects.unlink(c)
     col_ceil.objects.link(c)
@@ -297,12 +323,41 @@ for sx, sy in [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), 
     ld.color = (1.0, 0.78, 0.55); ld.shadow_soft_size = 0.04
     lo = bpy.data.objects.new('spotl', ld); lo.location = (sx, sy, H - 0.02); col_main.objects.link(lo)
 
-# ---- muro oeste: panel de listones de nogal detras del sillon ----
-box('panel_fondo', 0, 0.012, 1.28, 4.14, 0, 2.55, 'dark')
-y = 1.295
-while y < 4.13:
-    box('liston', 0.012, 0.040, y, y + 0.032, 0, 2.55, 'wal_z'); y += 0.06
-box('led_listones', 0.045, 0.06, 1.28, 4.14, 2.535, 2.548, 'led_soft')
+# ---- muros de acento ----
+ZP = 2.55 if not B else H
+if not B:
+    # A: listones de nogal en el muro oeste, detras del sillon y la credenza
+    box('panel_fondo', 0, 0.012, 1.28, 4.14, 0, ZP, 'dark')
+    y = 1.295
+    while y < 4.13:
+        box('liston', 0.012, 0.040, y, y + 0.032, 0, ZP, 'wal_z'); y += 0.06
+    box('led_listones', 0.045, 0.06, 1.28, 4.14, 2.535, 2.548, 'led_soft')
+else:
+    # B: tableros lisos de nogal en el muro oeste + listones de nogal en el muro detras del escritorio
+    box('tablero_fondo', 0, 0.006, 1.28, 4.14, 0, ZP, 'dark')
+    y = 1.28
+    while y < 4.13:
+        box('tablero', 0.006, 0.022, y + 0.002, y + 0.57, 0, ZP, 'wal_z'); y += 0.572
+    box('led_tablero', 0.03, 0.045, 1.30, 4.12, 0.0, 0.012, 'led_soft')
+    box('cuadro_marco', 0.022, 0.045, 1.78, 2.58, 1.20, 1.80, 'black')
+    box('cuadro_lienzo', 0.045, 0.048, 1.80, 2.56, 1.22, 1.78, 'art_a')
+    box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
+    box('listones_fondo', 1.90, W, 4.788, 4.80, 0, ZP, 'dark')
+    x = 1.915
+    while x < W - 0.03:
+        box('liston_b', x, x + 0.032, 4.76, 4.788, 0, ZP, 'wal_z'); x += 0.06
+    box('led_listones_b', 1.92, W - 0.02, 4.74, 4.755, H - 0.012, H, 'led_soft', coll=col_ceil)
+    # cortinas translucidas a los lados del ventanal
+    def cortina(n, xa, xb):
+        vs = []; fs = []; N = 60
+        for i in range(N + 1):
+            x = xa + (xb - xa) * i / N; yy = 0.045 + 0.022 * math.sin(i * 0.9)
+            vs += [(x, yy, 0.02), (x, yy, H - 0.03)]
+            if i: fs.append((2 * i - 2, 2 * i, 2 * i + 1, 2 * i - 1))
+        me = bpy.data.meshes.new(n); me.from_pydata(vs, [], fs)
+        for p in me.polygons: p.use_smooth = True
+        o = bpy.data.objects.new(n, me); col_main.objects.link(o); me.materials.append(M['sheer'])
+    cortina('cortina_o', 0.02, 0.55); cortina('cortina_e', W - 0.42, W - 0.02)
 
 # ---- ARBOL: centro (0.30, 4.40) ----
 box('arbol_maceta', 0.16, 0.44, 4.26, 4.54, 0, 0.42, 'conc', 0.012)
@@ -314,14 +369,14 @@ foliage('arbol_hojas', (0.31, 4.40, 1.50), (0.27, 0.28, 0.48), 650, 0.075)
 
 # ---- SILLON 2 PLAZAS: x 0-0.70, y 1.431-2.931 (0.27 de la camilla y 0.27 bajo la linea del escritorio) ----
 SY = 1.431
-box('sillon_base', 0.02, 0.70, SY, SY + 1.50, 0.10, 0.26, 'fab_greige', 0.02, smooth=True)
-box('sillon_respaldo', 0.0, 0.15, SY, SY + 1.50, 0.10, 0.78, 'fab_greige', 0.03, smooth=True)
-box('sillon_brazo_s', 0.0, 0.70, SY, SY + 0.15, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
-box('sillon_brazo_n', 0.0, 0.70, SY + 1.35, SY + 1.50, 0.10, 0.60, 'fab_greige', 0.03, smooth=True)
-box('sillon_asiento_s', 0.15, 0.70, SY + 0.155, SY + 0.747, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
-box('sillon_asiento_n', 0.15, 0.70, SY + 0.753, SY + 1.345, 0.26, 0.44, 'fab_greige', 0.04, smooth=True)
-box('sillon_cojin_s', 0.15, 0.29, SY + 0.155, SY + 0.747, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
-box('sillon_cojin_n', 0.15, 0.29, SY + 0.753, SY + 1.345, 0.44, 0.76, 'fab_greige', 0.04, smooth=True)
+box('sillon_base', 0.02, 0.70, SY, SY + 1.50, 0.10, 0.26, 'sofa', 0.02, smooth=True)
+box('sillon_respaldo', 0.0, 0.15, SY, SY + 1.50, 0.10, 0.78, 'sofa', 0.03, smooth=True)
+box('sillon_brazo_s', 0.0, 0.70, SY, SY + 0.15, 0.10, 0.60, 'sofa', 0.03, smooth=True)
+box('sillon_brazo_n', 0.0, 0.70, SY + 1.35, SY + 1.50, 0.10, 0.60, 'sofa', 0.03, smooth=True)
+box('sillon_asiento_s', 0.15, 0.70, SY + 0.155, SY + 0.747, 0.26, 0.44, 'sofa', 0.04, smooth=True)
+box('sillon_asiento_n', 0.15, 0.70, SY + 0.753, SY + 1.345, 0.26, 0.44, 'sofa', 0.04, smooth=True)
+box('sillon_cojin_s', 0.15, 0.29, SY + 0.155, SY + 0.747, 0.44, 0.76, 'sofa', 0.04, smooth=True)
+box('sillon_cojin_n', 0.15, 0.29, SY + 0.753, SY + 1.345, 0.44, 0.76, 'sofa', 0.04, smooth=True)
 for lx in (0.06, 0.64):
     for ly in (SY + 0.06, SY + 1.44):
         box('sillon_pata', lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, 0.10, 'black')
@@ -331,15 +386,15 @@ KY0, KY1, KH = 3.063, 4.063, 0.75
 box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
 box('credenza_cuerpo', 0.0, 0.33, KY0, KY1, 0.08, KH - 0.02, 'dark')
 box('credenza_costado_s', 0.0, 0.35, KY0, KY0 + 0.018, 0.08, KH - 0.02, 'wal_z'); box('credenza_costado_n', 0.0, 0.35, KY1 - 0.018, KY1, 0.08, KH - 0.02, 'wal_z')
-box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, 0.0815, KH - 0.0215, 'wal_z'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, 0.0815, KH - 0.0215, 'wal_z')
+box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, 0.0815, KH - 0.0215, 'cred_front'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, 0.0815, KH - 0.0215, 'cred_front')
 box('credenza_cubierta', 0.0, 0.36, KY0 - 0.005, KY1 + 0.005, KH - 0.02, KH, 'wal_y', 0.002)
 cyl('credenza_jarron', 0.17, 3.36, KH, KH + 0.26, 0.05, 'conc', 24, 0.03)
 box('credenza_libro1', 0.06, 0.28, 3.68, 3.94, KH, KH + 0.03, BOOKS[1]); box('credenza_libro2', 0.08, 0.27, 3.70, 3.92, KH + 0.03, KH + 0.055, BOOKS[0])
 
 # ---- CAMILLA: x 0.70-2.60, y 0.45-1.15; cabecera x 0.70-0.95 ----
 CZ = 0.62
-box('camilla_colchon', 0.955, 2.60, 0.45, 1.15, CZ, CZ + 0.09, 'leather', 0.03, smooth=True)
-hd = box('camilla_cabecera', 0.70, 0.945, 0.45, 1.15, CZ, CZ + 0.09, 'leather', 0.03, smooth=True)
+box('camilla_colchon', 0.955, 2.60, 0.45, 1.15, CZ, CZ + 0.09, 'cam', 0.03, smooth=True)
+hd = box('camilla_cabecera', 0.70, 0.945, 0.45, 1.15, CZ, CZ + 0.09, 'cam', 0.03, smooth=True)
 # cabecera inclinada alrededor de la bisagra (x=0.95), sin salirse de la huella
 hv = hd.data.vertices
 for v in hv:
@@ -359,8 +414,8 @@ for o in bpy.data.objects:
 
 # ---- ESCRITORIO: x 2.20-2.75, y 3.20-4.80 (pegado al muro del bano) ----
 box('escritorio_cubierta', 2.20, 2.75, 3.20, 4.80, 0.71, 0.75, 'wal_y', 0.003)
-box('escritorio_costado', 2.20, 2.75, 3.20, 3.24, 0, 0.71, 'wal_z', 0.003)
-box('escritorio_faldon', 2.20, 2.22, 3.24, 4.80, 0.12, 0.71, 'wal_z')
+box('escritorio_costado', 2.20, 2.75, 3.20, 3.24, 0, 0.71, 'desk_base', 0.003)
+box('escritorio_faldon', 2.20, 2.22, 3.24, 4.80, 0.12, 0.71, 'desk_base')
 box('laptop', 2.36, 2.60, 3.86, 4.20, 0.75, 0.766, 'steel', 0.004)
 cyl('lampara_base', 2.62, 4.62, 0.75, 0.765, 0.07, 'black'); cyl('lampara_poste', 2.62, 4.62, 0.765, 1.15, 0.008, 'black', 12)
 box('lampara_brazo', 2.40, 2.63, 4.61, 4.63, 1.14, 1.155, 'black'); box('lampara_led', 2.41, 2.58, 4.612, 4.628, 1.137, 1.14, 'led_soft')
@@ -370,10 +425,10 @@ foliage('escritorio_planta', (2.34, 4.55, 0.95), (0.10, 0.10, 0.10), 160, 0.045)
 # ---- SILLAS DE PACIENTE: 0.45 x 0.45 en x 1.50-1.95; y 3.20-3.65 y 3.95-4.40 (miran al este) ----
 def silla_paciente(n, x0, y0):
     x1, y1 = x0 + 0.45, y0 + 0.45
-    box(n + '_asiento', x0 + 0.02, x1, y0 + 0.02, y1 - 0.02, 0.38, 0.47, 'fab_dark', 0.03, smooth=True)
-    box(n + '_respaldo', x0, x0 + 0.08, y0, y1, 0.36, 0.82, 'fab_dark', 0.03, smooth=True)
-    box(n + '_brazo_s', x0, x1 - 0.10, y0, y0 + 0.05, 0.36, 0.64, 'fab_dark', 0.02, smooth=True)
-    box(n + '_brazo_n', x0, x1 - 0.10, y1 - 0.05, y1, 0.36, 0.64, 'fab_dark', 0.02, smooth=True)
+    box(n + '_asiento', x0 + 0.02, x1, y0 + 0.02, y1 - 0.02, 0.38, 0.47, 'chair', 0.03, smooth=True)
+    box(n + '_respaldo', x0, x0 + 0.08, y0, y1, 0.36, 0.82, 'chair', 0.03, smooth=True)
+    box(n + '_brazo_s', x0, x1 - 0.10, y0, y0 + 0.05, 0.36, 0.64, 'chair', 0.02, smooth=True)
+    box(n + '_brazo_n', x0, x1 - 0.10, y1 - 0.05, y1, 0.36, 0.64, 'chair', 0.02, smooth=True)
     for lx in (x0 + 0.04, x1 - 0.04):
         for ly in (y0 + 0.04, y1 - 0.04):
             cyl(n + '_pata', lx, ly, 0, 0.38, 0.012, 'wal_z', 12, 0.018)
@@ -405,7 +460,7 @@ def tv_art():
     nt.links.new(im.outputs['Color'], b.inputs['Base Color']); nt.links.new(im.outputs['Color'], b.inputs['Emission Color'])
     b.inputs['Emission Strength'].default_value = 0.9; b.inputs['Roughness'].default_value = 0.6
     return m
-box('tv_marco', W - 0.025, W, TVY - TVW / 2, TVY + TVW / 2, TVZ - TVH / 2, TVZ + TVH / 2, 'wal_y', 0.002)
+box('tv_marco', W - 0.025, W, TVY - TVW / 2, TVY + TVW / 2, TVZ - TVH / 2, TVZ + TVH / 2, 'black' if B else 'wal_y', 0.002)
 box('tv_pantalla', W - 0.0265, W - 0.024, TVY - TVW / 2 + 0.012, TVY + TVW / 2 - 0.012, TVZ - TVH / 2 + 0.012, TVZ + TVH / 2 - 0.012, tv_art())
 
 # ---- BARRA CON TARJA: x 3.186-3.686, y 0.15-1.85; divisiones y 0.40 y 1.45; tarja x 3.241-3.631, y 0.60-1.10 ----
