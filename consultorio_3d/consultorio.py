@@ -4,8 +4,8 @@ Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
 Las alturas NO vienen en el plano: son supuestos (ver constantes).
 
-Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B]
-A y B comparten plano y estilo; cambian acabados de muros, techo, iluminacion y tapices.
+Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C]
+A y B: concreto aparente + nogal, con acabados distintos. C: moderno sencillo y atemporal (blanco calido, roble natural, sin acentos).
 """
 import sys, math, random
 import bpy
@@ -18,6 +18,7 @@ SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 32
 ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 and sys.argv[4] != 'all' else None
 V = sys.argv[5].upper() if len(sys.argv) > 5 else 'A'
 B = V == 'B'
+C = V == 'C'
 
 # ---------- cotas del plano (m) ----------
 W, L = 3.686, 6.0            # interior
@@ -100,7 +101,7 @@ def concrete(name, c1, c2, bump=0.25):
     nt.links.new(bp.outputs['Normal'], b.inputs['Normal'])
     return m
 
-def walnut(name, axis):
+def walnut(name, axis, cols=((0.055, 0.028, 0.014), (0.12, 0.062, 0.03), (0.20, 0.105, 0.05))):
     """axis: eje de la veta (0=x,1=y,2=z)."""
     m, nt, b = mat_new(name)
     sc = [34, 34, 34]; sc[axis] = 1.6
@@ -111,9 +112,9 @@ def walnut(name, axis):
     nt.links.new(mp.outputs[0], n.inputs['Vector'])
     r = nt.nodes.new('ShaderNodeValToRGB')
     e = r.color_ramp.elements
-    e[0].position = 0.28; e[0].color = (0.055, 0.028, 0.014, 1)
-    e[1].position = 0.72; e[1].color = (0.20, 0.105, 0.05, 1)
-    mid = e.new(0.5); mid.color = (0.12, 0.062, 0.03, 1)
+    e[0].position = 0.28; e[0].color = (*cols[0], 1)
+    e[1].position = 0.72; e[1].color = (*cols[2], 1)
+    mid = e.new(0.5); mid.color = (*cols[1], 1)
     nt.links.new(n.outputs['Fac'], r.inputs['Fac'])
     nt.links.new(r.outputs['Color'], b.inputs['Base Color'])
     b.inputs['Roughness'].default_value = 0.42
@@ -132,8 +133,8 @@ def tile(name):
     br.inputs['Row Height'].default_value = 1.2 if B else 0.6
     if B: br.offset = 0.0
     br.inputs['Mortar Size'].default_value = 0.003
-    br.inputs['Color1'].default_value = (0.15, 0.145, 0.137, 1) if B else (0.235, 0.225, 0.208, 1)
-    br.inputs['Color2'].default_value = (0.16, 0.155, 0.146, 1) if B else (0.25, 0.24, 0.222, 1)
+    br.inputs['Color1'].default_value = (0.15, 0.145, 0.137, 1) if B else (0.34, 0.32, 0.285, 1) if C else (0.235, 0.225, 0.208, 1)
+    br.inputs['Color2'].default_value = (0.16, 0.155, 0.146, 1) if B else (0.355, 0.335, 0.30, 1) if C else (0.25, 0.24, 0.222, 1)
     br.inputs['Mortar'].default_value = (0.09, 0.088, 0.085, 1)
     nt.links.new(mp.outputs[0], br.inputs['Vector'])
     n = nt.nodes.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = 2.5; n.inputs['Detail'].default_value = 8
@@ -193,8 +194,18 @@ M['greige_leather'] = flat('piel_greige', (0.30, 0.27, 0.225), 0.45)
 M['sheer'] = flat('cortina', (0.62, 0.59, 0.53), 0.9)
 M['art_a'] = flat('lienzo_a', (0.55, 0.50, 0.42), 0.9); M['art_b'] = flat('lienzo_b', (0.03, 0.03, 0.03), 0.9); M['art_c'] = flat('lienzo_c', (0.17, 0.09, 0.045), 0.9)
 M.update(w_west='greige', w_bath='greige', sofa='fab_greige', chair='fab_dark', cam='leather', desk_base='wal_z', cred_front='wal_z')
+M['w_east'] = 'conc'
+if C:
+    OAK = ((0.20, 0.135, 0.075), (0.30, 0.21, 0.125), (0.40, 0.29, 0.18))
+    for k, ax in (('wal_z', 2), ('wal_y', 1), ('wal_x', 0)): M[k] = walnut('roble_' + k, ax, OAK)
+    M['greige'] = flat('blanco_calido', (0.80, 0.78, 0.73), 0.9)
+    M['conc_ceil'] = flat('techo_blanco', (0.85, 0.84, 0.81), 0.95)
+    M['sheer'] = flat('cortina_lino', (0.82, 0.80, 0.75), 0.9)
+    M['warm_grey'] = flat('tela_gris_calido', (0.24, 0.225, 0.20), 0.95)
+    M['grey_leather'] = flat('piel_gris', (0.13, 0.125, 0.12), 0.45)
+    M.update(w_east='greige', sofa='warm_grey', chair='fab_greige', cam='grey_leather')
 if B: M.update(w_bath='anthr', sofa='graphite', chair='fab_greige', cam='greige_leather', desk_base='dark', cred_front='dark')
-for k in ('w_west', 'w_bath', 'sofa', 'chair', 'cam', 'desk_base', 'cred_front'): M[k] = M[M[k]]
+for k in ('w_east', 'w_west', 'w_bath', 'sofa', 'chair', 'cam', 'desk_base', 'cred_front'): M[k] = M[M[k]]
 BOOKS = [flat('libro%d' % i, c, 0.7) for i, c in enumerate(
     [(0.05, 0.05, 0.05), (0.42, 0.39, 0.34), (0.16, 0.10, 0.06), (0.30, 0.30, 0.29), (0.09, 0.09, 0.10), (0.55, 0.51, 0.45)])]
 
@@ -260,7 +271,7 @@ box('losa', -T, W + T, -T, L + T, H, H + 0.15, 'conc_ceil', coll=col_ceil)
 
 # ---- muros perimetrales ----
 box('muro_oeste', -T, 0, -T, L + T, 0, H, 'greige')
-box('muro_este', W, W + T, -T, L + T, 0, H, 'conc')
+box('muro_este', W, W + T, -T, L + T, 0, H, 'w_east')
 # muro norte con vano de puerta x 0.30-1.20
 box('muro_norte_a', 0, 0.30, L, L + T, 0, H, 'greige')
 box('muro_norte_b', 1.20, W, L, L + T, 0, H, 'greige')
@@ -287,7 +298,7 @@ for i, x in enumerate([0, W / 3, 2 * W / 3, W]):
 box('ventanal_riel_inf', 0, W, -0.10, -0.05, 0, 0.04, 'black')
 box('ventanal_riel_sup', 0, W, -0.10, -0.05, H - 0.05, H, 'black')
 box('ventanal_vidrio', 0, W, -0.08, -0.072, 0, H, 'glass')
-box('muro_sur_izq', -T, 0, -T, 0, 0, H, 'greige'); box('muro_sur_der', W, W + T, -T, 0, 0, H, 'conc')
+box('muro_sur_izq', -T, 0, -T, 0, 0, H, 'greige'); box('muro_sur_der', W, W + T, -T, 0, 0, H, 'w_east')
 
 # ---- patio ----
 box('patio_piso', -1.5, W + 1.5, -3.6, -T, -0.1, -0.02, 'patio_floor')
@@ -303,36 +314,36 @@ def soffit(n, x0, x1, y0, y1, lip, led):
     box('plafon_ceja_' + n, *lip, 2.57, 2.62, 'conc_ceil', coll=col_ceil)
     box('led_cornisa_' + n, *led, 2.572, 2.582, 'led', coll=col_ceil)
 SW = 0.35
-if not B:
+if not B and not C:
     soffit('o', 0, SW, 0, L, (SW - 0.02, SW, 0, L), (SW - 0.10, SW - 0.08, 0.1, L - 0.1))
     soffit('e', W - SW, W, 0, 4.80, (W - SW, W - SW + 0.02, 0, 4.80), (W - SW + 0.08, W - SW + 0.10, 0.1, 4.7))
     soffit('s', SW, W - SW, 0, SW, (SW, W - SW, SW - 0.02, SW), (SW, W - SW, SW - 0.10, SW - 0.08))
     soffit('n', 1.90, W - SW, 4.80 - SW, 4.80, (1.90, W - SW, 4.80 - SW, 4.80 - SW + 0.02), (1.95, W - SW, 4.80 - SW + 0.08, 4.80 - SW + 0.10))
-else:
+elif B:
     for lx in (0.95, 2.74):
         box('led_lineal_%.2f' % lx, lx - 0.015, lx + 0.015, 0.35, 4.45, H - 0.006, H, 'led', coll=col_ceil)
     box('led_lineal_acceso', 0.885, 0.915, 5.0, 5.9, H - 0.006, H, 'led', coll=col_ceil)
 
 # spots empotrados
-SPOTS = [(1.85, 0.8), (1.85, 2.4), (3.3, 2.7), (3.05, 3.8), (0.35, 2.2), (0.35, 3.55)] if B else [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]
+SPOTS = [(1.85, 0.8), (1.85, 2.4), (3.3, 2.7), (3.05, 3.8), (0.35, 2.2), (0.35, 3.55)] if B else [(1.0, 0.8), (2.6, 0.8), (1.0, 2.3), (2.6, 2.3), (1.0, 3.8), (2.6, 3.8), (0.9, 5.4)] if C else [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]
 for sx, sy in SPOTS:
     c = cyl('spot_%.1f_%.1f' % (sx, sy), sx, sy, H - 0.004, H, 0.04, 'spot', 24)
     for cc in c.users_collection: cc.objects.unlink(c)
     col_ceil.objects.link(c)
-    ld = bpy.data.lights.new('spotl', 'SPOT'); ld.energy = 130; ld.spot_size = math.radians(75); ld.spot_blend = 0.6
+    ld = bpy.data.lights.new('spotl', 'SPOT'); ld.energy = 150 if C else 130; ld.spot_size = math.radians(75); ld.spot_blend = 0.6
     ld.color = (1.0, 0.78, 0.55); ld.shadow_soft_size = 0.04
     lo = bpy.data.objects.new('spotl', ld); lo.location = (sx, sy, H - 0.02); col_main.objects.link(lo)
 
 # ---- muros de acento ----
 ZP = 2.55 if not B else H
-if not B:
+if not B and not C:
     # A: listones de nogal en el muro oeste, detras del sillon y la credenza
     box('panel_fondo', 0, 0.012, 1.28, 4.14, 0, ZP, 'dark')
     y = 1.295
     while y < 4.13:
         box('liston', 0.012, 0.040, y, y + 0.032, 0, ZP, 'wal_z'); y += 0.06
     box('led_listones', 0.045, 0.06, 1.28, 4.14, 2.535, 2.548, 'led_soft')
-else:
+elif B:
     # B: tableros lisos de nogal en el muro oeste + listones de nogal en el muro detras del escritorio
     box('tablero_fondo', 0, 0.006, 1.28, 4.14, 0, ZP, 'dark')
     y = 1.28
@@ -347,6 +358,14 @@ else:
     while x < W - 0.03:
         box('liston_b', x, x + 0.032, 4.76, 4.788, 0, ZP, 'wal_z'); x += 0.06
     box('led_listones_b', 1.92, W - 0.02, 4.74, 4.755, H - 0.012, H, 'led_soft', coll=col_ceil)
+if C:
+    # C: muros lisos; un solo cuadro sobre el sillon y salpicadero de cuarzo en la barra
+    box('cuadro_marco', 0.0, 0.025, 1.73, 2.63, 1.15, 1.80, 'wal_y')
+    box('cuadro_paspartu', 0.025, 0.028, 1.75, 2.61, 1.17, 1.78, flat('paspartu', (0.72, 0.70, 0.65), 0.9))
+    box('cuadro_lienzo', 0.028, 0.03, 1.87, 2.49, 1.27, 1.68, 'art_a')
+    box('cuadro_m1', 0.03, 0.032, 1.87, 2.49, 1.27, 1.42, flat('lienzo_d', (0.20, 0.19, 0.17), 0.9))
+    box('barra_salpicadero', W - 0.012, W, 0.15, 1.85, 0.90, 1.45, 'quartz')
+if B or C:
     # cortinas translucidas a los lados del ventanal
     def cortina(n, xa, xb):
         vs = []; fs = []; N = 60
@@ -542,7 +561,7 @@ for c in CAMS:
         scene.render.resolution_y = RESX; scene.render.resolution_x = int(RESX * c['aspect'])
     else:
         scene.render.resolution_x = RESX; scene.render.resolution_y = int(RESX / c['aspect'])
-    scene.view_settings.exposure = c['exposure']
+    scene.view_settings.exposure = c['exposure'] + (0.25 if C else 0.0)
     scene.render.filepath = '%s/%s.png' % (OUT, c['name'])
     bpy.ops.render.render(write_still=True)
     print('RENDER OK', c['name'], flush=True)
