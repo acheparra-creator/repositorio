@@ -1,4 +1,5 @@
-"""Modelo 3D del consultorio N1-07 (Tipo A, opcion C) a partir del plano A-03, revision 1 (plano_consultorio_v6).
+"""Modelo 3D del consultorio N1-07 (Tipo A, opcion C) a partir del plano A-03, revision 2 (plano_consultorio_v7):
+mini split en el muro del bano sobre el escritorio, jardinera al pie del ventanal y vista abierta (sin muro de fondo).
 
 Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
@@ -7,7 +8,7 @@ Las alturas NO vienen en el plano: son supuestos (ver constantes).
 Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D|E]
 A y B: concreto aparente + nogal, con acabados distintos. C: moderno sencillo y atemporal (blanco calido, roble natural, sin acentos).
 D: como C pero enfocado en amplitud (espejo en muro oeste, muebles volados, muros banados de luz, ventanal despejado).
-E: la paleta y acabados de B (concreto, nogal, antracita) con los recursos de amplitud: espejo bronce tras el sillon, muebles volados, luz rasante.
+E: la paleta y acabados de B (concreto, nogal, antracita) con los recursos de amplitud: muebles volados y luz rasante (sin espejo).
 """
 import sys, math, random
 import bpy
@@ -309,13 +310,23 @@ box('ventanal_riel_sup', 0, W, -0.10, -0.05, H - 0.05, H, 'black')
 box('ventanal_vidrio', 0, W, -0.08, -0.072, 0, H, 'glass')
 box('muro_sur_izq', -T, 0, -T, 0, 0, H, 'greige'); box('muro_sur_der', W, W + T, -T, 0, 0, H, 'w_east')
 
-# ---- patio ----
-box('patio_piso', -1.5, W + 1.5, -3.6, -T, -0.1, -0.02, 'patio_floor')
-box('patio_muro_fondo', -1.5, W + 1.5, -3.75, -3.6, 0, 3.0, 'patio_wall')
-box('patio_muro_o', -1.65, -1.5, -3.75, 0, 0, 3.0, 'patio_wall'); box('patio_muro_e', W + 1.5, W + 1.65, -3.75, 0, 0, 3.0, 'patio_wall')
-for px in (0.5, 1.9, 3.2):
-    box('jardinera%.1f' % px, px - 0.3, px + 0.3, -3.55, -3.0, 0, 0.45, 'conc', 0.01)
-    foliage('arbusto%.1f' % px, (px, -3.27, 1.0), (0.42, 0.3, 0.6), 700, 0.09)
+# ---- exterior (rev. 2): jardinera al pie del ventanal y vista abierta, sin muro de fondo ----
+# jardinera segun plano: ancho completo, y -0.55 a -0.15; altura supuesta 0.45
+box('jardinera', 0, W, -0.55, -0.15, -0.02, 0.45, 'conc', 0.008)
+box('jardinera_tierra', 0.04, W - 0.04, -0.51, -0.19, 0.40, 0.43, 'soil')
+for px in (0.30, 0.67, 1.02, 1.38, 2.47, 2.84, 3.20, 3.57):          # 8 plantas, como en el plano
+    foliage('jardinera_planta%.2f' % px, (px, -0.35, 0.68), (0.19, 0.17, 0.26), 260, 0.07)
+# entorno: el plano solo dice "vista abierta al hospital"; el edificio y el jardin son genericos
+M['pasto'] = flat('pasto', (0.10, 0.17, 0.06), 0.9); M['fachada'] = flat('fachada', (0.55, 0.53, 0.50), 0.8)
+M['cristal_lejano'] = flat('cristal_lejano', (0.10, 0.14, 0.17), 0.15)
+box('exterior_suelo', -40, 40, -70, -0.55, -0.12, -0.02, 'pasto')
+box('exterior_anden', -40, 40, -9.0, -6.5, -0.02, 0.0, 'patio_floor')
+box('hospital', -16, 20, -42, -30, 0, 16, 'fachada')
+for k in range(4):
+    box('hospital_ventanas%d' % k, -15.5, 19.5, -30.0, -29.9, 1.6 + k * 3.6, 3.6 + k * 3.6, 'cristal_lejano')
+for tx, ty, th in ((-3.5, -13, 4.5), (1.2, -17, 5.5), (5.5, -12, 4.0), (9.0, -19, 6.0), (-8.0, -20, 6.0)):
+    cyl('arbol_ext_tronco%.1f' % tx, tx, ty, 0, th * 0.55, 0.12, 'trunk', 12)
+    foliage('arbol_ext%.1f' % tx, (tx, ty, th * 0.75), (th * 0.33, th * 0.33, th * 0.3), 900, th * 0.11)
 
 # ---- plafon perimetral con luz indirecta ----
 def soffit(n, x0, x1, y0, y1, lip, led):
@@ -356,18 +367,12 @@ elif B:
     # B: tableros lisos de nogal en el muro oeste + listones de nogal en el muro detras del escritorio
     box('tablero_fondo', 0, 0.006, 1.28, 4.14, 0, ZP, 'dark')
     y = 1.28
-    if E:
-        # espejo bronce de piso a techo detras del sillon; el nogal queda solo tras la credenza
-        for k in range(3):
-            box('espejo%d' % k, 0.006, 0.012, 1.28 + k * 0.572 + 0.002, 1.28 + (k + 1) * 0.572 - 0.002, 0.0, ZP, 'mirror_bronze')
-        y = 1.28 + 3 * 0.572
     while y < 4.13:
         box('tablero', 0.006, 0.022, y + 0.002, y + 0.57, 0, ZP, 'wal_z'); y += 0.572
     box('led_tablero', 0.03, 0.045, 1.30, 4.12, 0.0, 0.012, 'led_soft')
-    if not E:
-        box('cuadro_marco', 0.022, 0.045, 1.78, 2.58, 1.20, 1.80, 'black')
-        box('cuadro_lienzo', 0.045, 0.048, 1.80, 2.56, 1.22, 1.78, 'art_a')
-        box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
+    box('cuadro_marco', 0.022, 0.045, 1.78, 2.58, 1.20, 1.80, 'black')
+    box('cuadro_lienzo', 0.045, 0.048, 1.80, 2.56, 1.22, 1.78, 'art_a')
+    box('cuadro_m1', 0.048, 0.05, 1.88, 2.20, 1.42, 1.72, 'art_b'); box('cuadro_m2', 0.049, 0.051, 2.12, 2.46, 1.28, 1.55, 'art_c')
     if E:
         box('bano_luz_e', W - 0.10, W - 0.07, 0.2, 4.7, H - 0.006, H, 'led', coll=col_ceil)
     box('listones_fondo', 1.90, W, 4.788, 4.80, 0, ZP, 'dark')
@@ -403,6 +408,13 @@ if (B or C) and not D:
         for p in me.polygons: p.use_smooth = True
         o = bpy.data.objects.new(n, me); col_main.objects.link(o); me.materials.append(M['sheer'])
     cortina('cortina_o', 0.02, 0.55); cortina('cortina_e', W - 0.42, W - 0.02)
+
+# ---- MINI SPLIT (rev. 2): unidad interior en el muro del bano, x 1.948-2.897, fondo 0.22, h = 2.20 m ----
+M['ac'] = flat('ac_blanco', (0.80, 0.80, 0.79), 0.35)
+AY1 = 4.76 if B else 4.80                       # en B/E va sobre los listones
+box('minisplit', 1.948, 2.897, AY1 - 0.22, AY1, 2.20, 2.50, 'ac', 0.03, smooth=True)
+box('minisplit_rejilla', 1.99, 2.855, AY1 - 0.215, AY1 - 0.06, 2.194, 2.20, 'dark')
+box('minisplit_display', 2.78, 2.84, AY1 - 0.222, AY1 - 0.22, 2.27, 2.285, 'screen')
 
 # ---- ARBOL: centro (0.30, 4.40) ----
 box('arbol_maceta', 0.16, 0.44, 4.26, 4.54, 0, 0.42, 'conc', 0.012)
