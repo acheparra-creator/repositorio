@@ -4,8 +4,9 @@ Todas las cotas en planta salen del PDF vectorial (escala 1:50), en metros.
 Origen: esquina interior suroeste. X = este, Y = norte, Z = arriba.
 Las alturas NO vienen en el plano: son supuestos (ver constantes).
 
-Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C]
+Uso: python3 consultorio.py <carpeta_salida> [ancho_px] [muestras] [vistas,separadas,por,coma | all] [A|B|C|D]
 A y B: concreto aparente + nogal, con acabados distintos. C: moderno sencillo y atemporal (blanco calido, roble natural, sin acentos).
+D: como C pero enfocado en amplitud (espejo en muro oeste, muebles volados, muros banados de luz, ventanal despejado).
 """
 import sys, math, random
 import bpy
@@ -18,7 +19,8 @@ SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 32
 ONLY = sys.argv[4].split(',') if len(sys.argv) > 4 and sys.argv[4] != 'all' else None
 V = sys.argv[5].upper() if len(sys.argv) > 5 else 'A'
 B = V == 'B'
-C = V == 'C'
+D = V == 'D'
+C = V == 'C' or D          # D parte de la base clara de C
 
 # ---------- cotas del plano (m) ----------
 W, L = 3.686, 6.0            # interior
@@ -204,7 +206,10 @@ if C:
     M['warm_grey'] = flat('tela_gris_calido', (0.24, 0.225, 0.20), 0.95)
     M['grey_leather'] = flat('piel_gris', (0.13, 0.125, 0.12), 0.45)
     M.update(w_east='greige', sofa='warm_grey', chair='fab_greige', cam='grey_leather')
+    M['mirror'] = flat('espejo', (0.92, 0.92, 0.92), 0.0, 1.0)
+    if D: M.update(sofa='fab_greige', cam='greige_leather'); M['sup'] = M['greige']
 if B: M.update(w_bath='anthr', sofa='graphite', chair='fab_greige', cam='greige_leather', desk_base='dark', cred_front='dark')
+M.setdefault('sup', None)
 for k in ('w_east', 'w_west', 'w_bath', 'sofa', 'chair', 'cam', 'desk_base', 'cred_front'): M[k] = M[M[k]]
 BOOKS = [flat('libro%d' % i, c, 0.7) for i, c in enumerate(
     [(0.05, 0.05, 0.05), (0.42, 0.39, 0.34), (0.16, 0.10, 0.06), (0.30, 0.30, 0.29), (0.09, 0.09, 0.10), (0.55, 0.51, 0.45)])]
@@ -325,7 +330,7 @@ elif B:
     box('led_lineal_acceso', 0.885, 0.915, 5.0, 5.9, H - 0.006, H, 'led', coll=col_ceil)
 
 # spots empotrados
-SPOTS = [(1.85, 0.8), (1.85, 2.4), (3.3, 2.7), (3.05, 3.8), (0.35, 2.2), (0.35, 3.55)] if B else [(1.0, 0.8), (2.6, 0.8), (1.0, 2.3), (2.6, 2.3), (1.0, 3.8), (2.6, 3.8), (0.9, 5.4)] if C else [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]
+SPOTS = [(1.85, 0.8), (1.85, 2.4), (3.3, 2.7), (3.05, 3.8), (0.35, 2.2), (0.35, 3.55)] if B else [(1.85, 0.8), (1.85, 2.4), (1.85, 3.9), (0.9, 5.4)] if D else [(1.0, 0.8), (2.6, 0.8), (1.0, 2.3), (2.6, 2.3), (1.0, 3.8), (2.6, 3.8), (0.9, 5.4)] if C else [(1.25, 0.9), (2.45, 0.9), (1.25, 2.3), (2.45, 2.3), (1.25, 3.7), (2.45, 3.7), (0.9, 5.4)]
 for sx, sy in SPOTS:
     c = cyl('spot_%.1f_%.1f' % (sx, sy), sx, sy, H - 0.004, H, 0.04, 'spot', 24)
     for cc in c.users_collection: cc.objects.unlink(c)
@@ -359,13 +364,22 @@ elif B:
         box('liston_b', x, x + 0.032, 4.76, 4.788, 0, ZP, 'wal_z'); x += 0.06
     box('led_listones_b', 1.92, W - 0.02, 4.74, 4.755, H - 0.012, H, 'led_soft', coll=col_ceil)
 if C:
-    # C: muros lisos; un solo cuadro sobre el sillon y salpicadero de cuarzo en la barra
+    # C y D: muros lisos y salpicadero de cuarzo en la barra
+    box('barra_salpicadero', W - 0.012, W, 0.15, 1.85, 0.90, 1.45, 'quartz')
+if D:
+    # D: espejo de piso a techo en el muro oeste (duplica el ancho aparente) y luz rasante en los muros largos
+    for k in range(3):
+        box('espejo%d' % k, 0.0, 0.006, 1.28 + k * 0.955 + 0.002, 1.28 + (k + 1) * 0.955 - 0.002, 0.0, H, 'mirror')
+    box('bano_luz_o', 0.07, 0.10, 0.2, 5.8, H - 0.006, H, 'led', coll=col_ceil)
+    box('bano_luz_e', W - 0.10, W - 0.07, 0.2, 4.7, H - 0.006, H, 'led', coll=col_ceil)
+    box('bano_luz_n', 1.95, W - 0.12, 4.70, 4.73, H - 0.006, H, 'led', coll=col_ceil)
+if C and not D:
+    # C: un solo cuadro sobre el sillon
     box('cuadro_marco', 0.0, 0.025, 1.73, 2.63, 1.15, 1.80, 'wal_y')
     box('cuadro_paspartu', 0.025, 0.028, 1.75, 2.61, 1.17, 1.78, flat('paspartu', (0.72, 0.70, 0.65), 0.9))
     box('cuadro_lienzo', 0.028, 0.03, 1.87, 2.49, 1.27, 1.68, 'art_a')
     box('cuadro_m1', 0.03, 0.032, 1.87, 2.49, 1.27, 1.42, flat('lienzo_d', (0.20, 0.19, 0.17), 0.9))
-    box('barra_salpicadero', W - 0.012, W, 0.15, 1.85, 0.90, 1.45, 'quartz')
-if B or C:
+if (B or C) and not D:
     # cortinas translucidas a los lados del ventanal
     def cortina(n, xa, xb):
         vs = []; fs = []; N = 60
@@ -400,12 +414,20 @@ for lx in (0.06, 0.64):
     for ly in (SY + 0.06, SY + 1.44):
         box('sillon_pata', lx - 0.02, lx + 0.02, ly - 0.02, ly + 0.02, 0, 0.10, 'black')
 
+if D:
+    for o in bpy.data.objects:
+        if o.name.startswith('sillon_') and not o.name.startswith('sillon_pata'): o.location.z += 0.07
+    for lx in (0.06, 0.64):
+        for ly in (SY + 0.06, SY + 1.44):
+            box('sillon_pata_alta', lx - 0.015, lx + 0.015, ly - 0.015, ly + 0.015, 0.10, 0.17, 'black')
+
 # ---- CREDENZA 1.00 x 0.35: x 0-0.35, y 3.063-4.063 (altura supuesta 0.75) ----
 KY0, KY1, KH = 3.063, 4.063, 0.75
-box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
-box('credenza_cuerpo', 0.0, 0.33, KY0, KY1, 0.08, KH - 0.02, 'dark')
-box('credenza_costado_s', 0.0, 0.35, KY0, KY0 + 0.018, 0.08, KH - 0.02, 'wal_z'); box('credenza_costado_n', 0.0, 0.35, KY1 - 0.018, KY1, 0.08, KH - 0.02, 'wal_z')
-box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, 0.0815, KH - 0.0215, 'cred_front'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, 0.0815, KH - 0.0215, 'cred_front')
+KZ = 0.32 if D else 0.08
+if not D: box('credenza_zoclo', 0.0, 0.31, KY0 + 0.03, KY1 - 0.03, 0, 0.08, 'dark')
+box('credenza_cuerpo', 0.0, 0.33, KY0, KY1, KZ, KH - 0.02, 'dark')
+box('credenza_costado_s', 0.0, 0.35, KY0, KY0 + 0.018, KZ, KH - 0.02, 'wal_z'); box('credenza_costado_n', 0.0, 0.35, KY1 - 0.018, KY1, KZ, KH - 0.02, 'wal_z')
+box('credenza_puerta1', 0.332, 0.35, KY0 + 0.0195, 3.5615, KZ + 0.0015, KH - 0.0215, 'cred_front'); box('credenza_puerta2', 0.332, 0.35, 3.5645, KY1 - 0.0195, KZ + 0.0015, KH - 0.0215, 'cred_front')
 box('credenza_cubierta', 0.0, 0.36, KY0 - 0.005, KY1 + 0.005, KH - 0.02, KH, 'wal_y', 0.002)
 cyl('credenza_jarron', 0.17, 3.36, KH, KH + 0.26, 0.05, 'conc', 24, 0.03)
 box('credenza_libro1', 0.06, 0.28, 3.68, 3.94, KH, KH + 0.03, BOOKS[1]); box('credenza_libro2', 0.08, 0.27, 3.70, 3.92, KH + 0.03, KH + 0.055, BOOKS[0])
@@ -433,8 +455,13 @@ for o in bpy.data.objects:
 
 # ---- ESCRITORIO: x 2.20-2.75, y 3.20-4.80 (pegado al muro del bano) ----
 box('escritorio_cubierta', 2.20, 2.75, 3.20, 4.80, 0.71, 0.75, 'wal_y', 0.003)
-box('escritorio_costado', 2.20, 2.75, 3.20, 3.24, 0, 0.71, 'desk_base', 0.003)
-box('escritorio_faldon', 2.20, 2.22, 3.24, 4.80, 0.12, 0.71, 'desk_base')
+if D:
+    for lx in (2.225, 2.725):
+        box('escritorio_pata', lx - 0.015, lx + 0.015, 3.22, 3.25, 0, 0.71, 'black')
+    box('escritorio_travesano', 2.21, 2.74, 3.22, 3.25, 0.68, 0.71, 'black')
+else:
+    box('escritorio_costado', 2.20, 2.75, 3.20, 3.24, 0, 0.71, 'desk_base', 0.003)
+    box('escritorio_faldon', 2.20, 2.22, 3.24, 4.80, 0.12, 0.71, 'desk_base')
 box('laptop', 2.36, 2.60, 3.86, 4.20, 0.75, 0.766, 'steel', 0.004)
 cyl('lampara_base', 2.62, 4.62, 0.75, 0.765, 0.07, 'black'); cyl('lampara_poste', 2.62, 4.62, 0.765, 1.15, 0.008, 'black', 12)
 box('lampara_brazo', 2.40, 2.63, 4.61, 4.63, 1.14, 1.155, 'black'); box('lampara_led', 2.41, 2.58, 4.612, 4.628, 1.137, 1.14, 'led_soft')
@@ -508,10 +535,10 @@ cyl('barra_maceta', 3.50, 1.62, BH, BH + 0.11, 0.06, 'dark', 24, 0.07); foliage(
 # mueble superior: modulos cerrados (norte) + nicho abierto con LED
 UX0, UZ0, UZ1 = W - 0.32, 1.45, 2.05
 box('sup_cerrado', UX0 + 0.02, W, 1.25, BY1, UZ0, UZ1, 'dark')
-box('sup_cerrado_costados', UX0, W, 1.25, 1.268, UZ0, UZ1, 'wal_z'); box('sup_cerrado_costado_n', UX0, W, BY1 - 0.018, BY1, UZ0, UZ1, 'wal_z')
-box('sup_puerta1', UX0, UX0 + 0.018, 1.268 + g, 1.55 - g, UZ0 + g, UZ1 - g, 'wal_z'); box('sup_puerta2', UX0, UX0 + 0.018, 1.55 + g, BY1 - 0.018 - g, UZ0 + g, UZ1 - g, 'wal_z')
-box('sup_repisa_inf', UX0, W, BY0, 1.25, UZ0, UZ0 + 0.03, 'wal_y'); box('sup_repisa_sup', UX0, W, BY0, 1.25, UZ1 - 0.03, UZ1, 'wal_y')
-box('sup_costado_s', UX0, W, BY0, BY0 + 0.03, UZ0, UZ1, 'wal_z')
+box('sup_cerrado_costados', UX0, W, 1.25, 1.268, UZ0, UZ1, M['sup'] or 'wal_z'); box('sup_cerrado_costado_n', UX0, W, BY1 - 0.018, BY1, UZ0, UZ1, M['sup'] or 'wal_z')
+box('sup_puerta1', UX0, UX0 + 0.018, 1.268 + g, 1.55 - g, UZ0 + g, UZ1 - g, M['sup'] or 'wal_z'); box('sup_puerta2', UX0, UX0 + 0.018, 1.55 + g, BY1 - 0.018 - g, UZ0 + g, UZ1 - g, M['sup'] or 'wal_z')
+box('sup_repisa_inf', UX0, W, BY0, 1.25, UZ0, UZ0 + 0.03, M['sup'] or 'wal_y'); box('sup_repisa_sup', UX0, W, BY0, 1.25, UZ1 - 0.03, UZ1, M['sup'] or 'wal_y')
+box('sup_costado_s', UX0, W, BY0, BY0 + 0.03, UZ0, UZ1, M['sup'] or 'wal_z')
 box('led_bajo_repisa', W - 0.06, W - 0.045, BY0 + 0.05, BY1 - 0.05, UZ0 - 0.008, UZ0, 'led')
 box('led_nicho', W - 0.06, W - 0.045, BY0 + 0.05, 1.24, UZ1 - 0.038, UZ1 - 0.03, 'led')
 yb = 0.48
